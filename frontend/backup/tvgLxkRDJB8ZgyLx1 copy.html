@@ -1,0 +1,594 @@
+<html><head><base href="https://grungefootballpredictions.com/account">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account - Grunge Football Predictions</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+body {
+    font-family: 'Special Elite', cursive;
+    background-color: #1a1a1a;
+    color: #ddd;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="%231a1a1a"/><circle cx="50" cy="50" r="40" fill="none" stroke="%23333" stroke-width="0.5"/></svg>');
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #222;
+    border: 3px solid #444;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="%23222"/><path d="M0 0 L100 100 M100 0 L0 100" stroke="%23333" stroke-width="0.5"/></svg>');
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+h1, h2, h3 {
+    color: #ff3333;
+    text-transform: uppercase;
+    text-align: left;
+    margin: 0;
+    padding: 20px 0;
+    border-bottom: 2px solid #444;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    letter-spacing: 2px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 2px solid #444;
+}
+
+.back-button, .admin-button {
+    padding: 10px 20px;
+    background-color: #ff3333;
+    color: #1a1a1a;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    border: 2px solid #ddd;
+    transition: all 0.3s ease;
+    box-shadow: 3px 3px 0px #ddd;
+    margin-left: 10px;
+}
+
+.back-button:hover, .admin-button:hover {
+    background-color: #ddd;
+    color: #ff3333;
+    box-shadow: 5px 5px 0px #ff3333;
+}
+
+.profile-achievements {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.profile-section, .achievements-section {
+    width: 48%;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    background-color: #2a2a2a;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.achievement-icon {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+    background-color: #333;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #ff3333;
+}
+
+.achievement-info {
+    flex-grow: 1;
+}
+
+.achievement-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.achievement-description {
+    color: #33ff33;
+}
+
+.predictions-section, .history-section, .tournaments-stats-section {
+    margin-top: 30px;
+}
+
+.predictions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.prediction-card {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 220px;
+    justify-content: space-between;
+}
+
+.prediction-card h3 {
+    font-size: 1em;
+    text-align: center;
+    margin-bottom: 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.match-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    height: 40px;
+}
+
+.team {
+    text-align: center;
+    width: 40%;
+}
+
+.prediction-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    height: 40px;
+}
+
+.prediction-input input {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    background-color: #333;
+    border: 1px solid #555;
+    color: #ddd;
+    padding: 5px;
+    font-size: 1em;
+}
+
+.submit-prediction {
+    background-color: #ff3333;
+    color: #1a1a1a;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.submit-prediction:hover {
+    background-color: #ddd;
+    color: #ff3333;
+}
+
+.tournament-select {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #333;
+    border: 1px solid #555;
+    color: #ddd;
+    font-family: 'Special Elite', cursive;
+}
+
+.history-table, .tournaments-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.history-table th, .history-table td,
+.tournaments-stats-table th, .tournaments-stats-table td {
+    border: 1px solid #444;
+    padding: 10px;
+    text-align: left;
+}
+
+.history-table th, .tournaments-stats-table th {
+    background-color: #2a2a2a;
+    color: #ff3333;
+}
+
+.history-table tr:nth-child(even),
+.tournaments-stats-table tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+
+.points-3 {
+    color: #33ff33;
+}
+
+.points-1 {
+    color: #ffff33;
+}
+
+.points-0 {
+    color: #ff3333;
+}
+
+.tournament-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+
+.tournament-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+}
+
+.tournament-info {
+    flex-grow: 1;
+}
+
+.tournament-name {
+    font-weight: bold;
+    color: #ff3333;
+}
+
+.tournament-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #888;
+}
+
+.winner-badge {
+    background-color: #33ff33;
+    color: #1a1a1a;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+h1 {
+    animation: flicker 2s infinite;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header-container">
+        <h1>MY ACCOUNT</h1>
+        <div>
+            <a href="https://grungefootballpredictions.com/" class="back-button">BACK TO MAIN</a>
+            <a href="https://grungefootballpredictions.com/dashboard" class="admin-button">ADMIN</a>
+        </div>
+    </div>
+    
+    <div class="profile-achievements">
+        <div class="profile-section">
+            <h2>Profile Information</h2>
+            <p><strong>Username:</strong> GrungePredictor92</p>
+            <p><strong>Email:</strong> grungepredictor92@email.com</p>
+            <p><strong>Member Since:</strong> May 15, 2022</p>
+        </div>
+        
+        <div class="achievements-section">
+            <h2>Achievements</h2>
+            <div class="achievement">
+                <div class="achievement-icon">🏆</div>
+                <div class="achievement-info">
+                    <div class="achievement-title">PREMIER LEAGUE 2022/23</div>
+                    <div class="achievement-description">2nd Place</div>
+                </div>
+            </div>
+            <div class="achievement">
+                <div class="achievement-icon">🏅</div>
+                <div class="achievement-info">
+                    <div class="achievement-title">WORLD CUP 2022</div>
+                    <div class="achievement-description">3rd Place</div>
+                </div>
+            </div>
+            <div class="achievement">
+                <div class="achievement-icon">🥇</div>
+                <div class="achievement-info">
+                    <div class="achievement-title">CHAMPIONS LEAGUE 2021/22</div>
+                    <div class="achievement-description">1st Place</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="predictions-section">
+        <h2>Upcoming Predictions</h2>
+        <div class="predictions-grid">
+            <div class="prediction-card">
+                <h3>PREMIER LEAGUE 2023/24</h3>
+                <div class="match-info">
+                    <div class="team">ARSENAL</div>
+                    <span>vs</span>
+                    <div class="team">CHELSEA</div>
+                </div>
+                <div class="prediction-input">
+                    <input type="number" min="0" max="99" placeholder="0">
+                    <span>:</span>
+                    <input type="number" min="0" max="99" placeholder="0">
+                </div>
+                <button class="submit-prediction">Submit</button>
+            </div>
+            <div class="prediction-card">
+                <h3>CHAMPIONS LEAGUE 2023/24</h3>
+                <div class="match-info">
+                    <div class="team">REAL MADRID</div>
+                    <span>vs</span>
+                    <div class="team">BAYERN MUNICH</div>
+                </div>
+                <div class="prediction-input">
+                    <input type="number" min="0" max="99" placeholder="0">
+                    <span>:</span>
+                    <input type="number" min="0" max="99" placeholder="0">
+                </div>
+                <button class="submit-prediction">Submit</button>
+            </div>
+            <div class="prediction-card">
+                <h3>LA LIGA 2023/24</h3>
+                <div class="match-info">
+                    <div class="team">BARCELONA</div>
+                    <span>vs</span>
+                    <div class="team">ATLETICO MADRID</div>
+                </div>
+                <div class="prediction-input">
+                    <input type="number" min="0" max="99" placeholder="0">
+                    <span>:</span>
+                    <input type="number" min="0" max="99" placeholder="0">
+                </div>
+                <button class="submit-prediction">Submit</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="history-section">
+        <h2>Prediction History</h2>
+        <select id="tournament-select" class="tournament-select">
+            <option value="">Select a tournament</option>
+            <option value="world-cup-2022">WORLD CUP 2022</option>
+            <option value="premier-league-2022-23">PREMIER LEAGUE 2022/23</option>
+            <option value="champions-league-2022-23">CHAMPIONS LEAGUE 2022/23</option>
+        </select>
+        <div id="history-table-container"></div>
+    </div>
+
+    <div class="tournaments-stats-section">
+        <h2>TOURNAMENTS STATS</h2>
+        <div class="tournament-row">
+            <img src="https://example.com/premier-league-icon.png" alt="Premier League" class="tournament-icon">
+            <div class="tournament-info">
+                <div class="tournament-name">PREMIER LEAGUE 2022/23 <span class="winner-badge">WINNER</span></div>
+                <div class="tournament-stats">
+                    <div class="stat">
+                        <div class="stat-value">1st</div>
+                        <div class="stat-label">RANK</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">87</div>
+                        <div class="stat-label">POINTS</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">92%</div>
+                        <div class="stat-label">ACCURACY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tournament-row">
+            <img src="https://example.com/champions-league-icon.png" alt="Champions League" class="tournament-icon">
+            <div class="tournament-info">
+                <div class="tournament-name">CHAMPIONS LEAGUE 2022/23</div>
+                <div class="tournament-stats">
+                    <div class="stat">
+                        <div class="stat-value">3rd</div>
+                        <div class="stat-label">RANK</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">72</div>
+                        <div class="stat-label">POINTS</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">85%</div>
+                        <div class="stat-label">ACCURACY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tournament-row">
+            <img src="https://example.com/world-cup-icon.png" alt="World Cup" class="tournament-icon">
+            <div class="tournament-info">
+                <div class="tournament-name">WORLD CUP 2022</div>
+                <div class="tournament-stats">
+                    <div class="stat">
+                        <div class="stat-value">5th</div>
+                        <div class="stat-label">RANK</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">65</div>
+                        <div class="stat-label">POINTS</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">76%</div>
+                        <div class="stat-label">ACCURACY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Helper function to save prediction to local storage
+function savePrediction(matchId, score) {
+    let predictions = JSON.parse(localStorage.getItem('predictions')) || {};
+    predictions[matchId] = score;
+    localStorage.setItem('predictions', JSON.stringify(predictions));
+}
+
+// Helper function to load prediction from local storage
+function loadPrediction(matchId) {
+    let predictions = JSON.parse(localStorage.getItem('predictions')) || {};
+    return predictions[matchId] || null;
+}
+
+// Initialize predictions
+document.querySelectorAll('.prediction-card').forEach(card => {
+    const matchId = card.querySelector('h3').textContent + card.querySelector('.match-info').textContent;
+    const inputs = card.querySelectorAll('input');
+    const savedPrediction = loadPrediction(matchId);
+    
+    if (savedPrediction) {
+        inputs[0].value = savedPrediction.split(':')[0];
+        inputs[1].value = savedPrediction.split(':')[1];
+    }
+});
+
+document.querySelectorAll('.submit-prediction').forEach(button => {
+    button.addEventListener('click', function() {
+        const card = this.closest('.prediction-card');
+        const matchId = card.querySelector('h3').textContent + card.querySelector('.match-info').textContent;
+        const inputs = card.querySelectorAll('input');
+        const score = Array.from(inputs).map(input => input.value).join(':');
+        
+        // Save prediction
+        savePrediction(matchId, score);
+        
+        alert(`Prediction submitted: ${score}`);
+        // Here you would typically send this data to the server as well
+    });
+});
+
+const tournamentSelect = document.getElementById('tournament-select');
+const historyTableContainer = document.getElementById('history-table-container');
+
+const tournamentData = {
+    'world-cup-2022': [
+        { date: '18 Dec 2022, 18:00', match: 'ARGENTINA vs FRANCE', prediction: '3-2', actual: '3-3 (4-2 penalties)', points: 3 },
+        { date: '17 Dec 2022, 16:00', match: 'CROATIA vs MOROCCO', prediction: '2-1', actual: '2-1', points: 3 },
+        { date: '14 Dec 2022, 20:00', match: 'FRANCE vs MOROCCO', prediction: '2-0', actual: '2-0', points: 3 },
+        { date: '13 Dec 2022, 20:00', match: 'ARGENTINA vs CROATIA', prediction: '3-0', actual: '3-0', points: 3 },
+    ],
+    'premier-league-2022-23': [
+        { date: '01 Apr 2023, 12:30', match: 'MAN CITY vs LIVERPOOL', prediction: '2-1', actual: '4-1', points: 1 },
+        { date: '01 Oct 2022, 12:30', match: 'ARSENAL vs TOTTENHAM', prediction: '2-2', actual: '3-1', points: 0 },
+        { date: '22 Oct 2022, 17:30', match: 'CHELSEA vs MAN UNITED', prediction: '1-1', actual: '1-1', points: 3 },
+        { date: '03 Sep 2022, 12:30', match: 'LIVERPOOL vs EVERTON', prediction: '3-0', actual: '2-0', points: 1 },
+    ],
+    'champions-league-2022-23': [
+        { date: '17 May 2023, 21:00', match: 'REAL MADRID vs MAN CITY', prediction: '3-1', actual: '1-1 (3-4 penalties)', points: 0 },
+        { date: '16 May 2023, 21:00', match: 'INTER MILAN vs AC MILAN', prediction: '2-0', actual: '1-0', points: 1 },
+        { date: '10 Jun 2023, 21:00', match: 'MAN CITY vs INTER MILAN', prediction: '2-0', actual: '1-0', points: 1 },
+        { date: '18 Apr 2023, 21:00', match: 'NAPOLI vs AC MILAN', prediction: '2-1', actual: '1-1', points: 0 },
+    ]
+};
+
+tournamentSelect.addEventListener('change', function() {
+    const selectedTournament = this.value;
+    if (selectedTournament) {
+        const data = tournamentData[selectedTournament];
+        const table = `
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>DATE & TIME</th>
+                        <th>MATCH</th>
+                        <th>YOUR PREDICTION</th>
+                        <th>ACTUAL RESULT</th>
+                        <th>POINTS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(row => `
+                        <tr>
+                            <td>${row.date}</td>
+                            <td>${row.match}</td>
+                            <td>${row.prediction}</td>
+                            <td>${row.actual}</td>
+                            <td class="points-${row.points}">${row.points}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        historyTableContainer.innerHTML = table;
+    } else {
+        historyTableContainer.innerHTML = '';
+    }
+});
+
+// Admin functionality
+const adminButton = document.querySelector('.admin-button');
+
+// Simulating admin check (replace with actual admin check in production)
+const isAdmin = true;
+
+if (isAdmin) {
+    adminButton.style.display = 'inline-block';
+} else {
+    adminButton.style.display = 'none';
+}
+</script>
+</body></html>

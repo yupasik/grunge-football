@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+body {
+  font-family: 'Special Elite', cursive;
+  background-color: #1a1a1a;
+  color: #ddd;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+#root {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #222;
+  border: 3px solid #444;
+  padding: 20px;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Grunge Football Predictions</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Welcome to Grunge Football Predictions</h1>
+        <nav>
+            <ul id="nav-menu">
+                <!-- Эти элементы будут динамически изменяться -->
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <p>Welcome to the best place for football predictions! Join us to predict the scores and win!</p>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const navMenu = document.getElementById('nav-menu');
+        const token = localStorage.getItem('access_token');
+
+        if (token) {
+            // Если пользователь авторизован, отображаем кнопку "My Account"
+            navMenu.innerHTML = `
+                <li><a href="/pages/account.html">My Account</a></li>
+                <li><a href="#" id="logout">Sign Out</a></li>
+            `;
+
+            // Обработчик выхода из системы
+            document.getElementById('logout').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('access_token');
+                window.location.href = '/';
+            });
+        } else {
+            // Если пользователь не авторизован, отображаем кнопки "Sign In" и "Sign Up"
+            navMenu.innerHTML = `
+                <li><a href="/pages/signin.html">Sign In</a></li>
+                <li><a href="/pages/signup.html">Sign Up</a></li>
+            `;
+        }
+    });
+</script>
+</body>
+</html>

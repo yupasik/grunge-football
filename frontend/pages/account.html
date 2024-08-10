@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Grunge Football Predictions</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+<div class="container">
+    <div class="header-container">
+        <h1>MY ACCOUNT</h1>
+        <div>
+            <a href="/" class="back-button">BACK TO MAIN</a>
+            <a href="/dashboard" class="admin-button">ADMIN</a>
+        </div>
+    </div>
+
+    <div class="profile-achievements">
+        <div class="profile-section">
+            <h2>Profile Information</h2>
+            <p><strong>Username:</strong> <span id="username"></span></p>
+            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>Member Since:</strong> <span id="memberSince"></span></p>
+        </div>
+
+        <div class="achievements-section">
+            <h2>Achievements</h2>
+            <div id="achievements"></div>
+        </div>
+    </div>
+
+    <div class="predictions-section">
+        <h2>Upcoming Predictions</h2>
+        <div id="predictions-grid" class="predictions-grid"></div>
+    </div>
+
+    <div class="history-section">
+        <h2>Prediction History</h2>
+        <select id="tournament-select" class="tournament-select">
+            <option value="">Select a tournament</option>
+            <!-- Tournament options will be populated dynamically -->
+        </select>
+        <div id="history-table-container"></div>
+    </div>
+
+    <div class="tournaments-stats-section">
+        <h2>TOURNAMENTS STATS</h2>
+        <div id="tournaments-stats"></div>
+    </div>
+</div>
+
+<script>
+// Helper function to display user profile information
+function displayUserInfo(user) {
+    document.getElementById('username').textContent = user.username;
+    document.getElementById('email').textContent = user.email;
+    document.getElementById('memberSince').textContent = user.member_since;
+}
+
+// Helper function to display achievements
+function displayAchievements(achievements) {
+    const achievementsContainer = document.getElementById('achievements');
+    achievements.forEach(achievement => {
+        const achievementDiv = document.createElement('div');
+        achievementDiv.className = 'achievement';
+        achievementDiv.innerHTML = `
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-info">
+                <div class="achievement-title">${achievement.title}</div>
+                <div class="achievement-description">${achievement.description}</div>
+            </div>
+        `;
+        achievementsContainer.appendChild(achievementDiv);
+    });
+}
+
+// Helper function to display backend
+function displayPredictions(predictions) {
+    const predictionsGrid = document.getElementById('predictions-grid');
+    predictions.forEach(prediction => {
+        const predictionCard = document.createElement('div');
+        predictionCard.className = 'prediction-card';
+        predictionCard.innerHTML = `
+            <h3>${prediction.tournament}</h3>
+            <div class="match-info">
+                <div class="team">${prediction.team1}</div>
+                <span>vs</span>
+                <div class="team">${prediction.team2}</div>
+            </div>
+            <div class="prediction-input">
+                <input type="number" min="0" max="99" value="${prediction.score1}">
+                <span>:</span>
+                <input type="number" min="0" max="99" value="${prediction.score2}">
+            </div>
+            <button class="submit-prediction">Submit</button>
+        `;
+        predictionsGrid.appendChild(predictionCard);
+    });
+}
+
+// Fetch user information and backend
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        window.location.href = '/signin';
+    }
+
+    fetch('/api/users/me', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.username) {
+            displayUserInfo(data);
+            displayAchievements(data.achievements || []);
+            displayPredictions(data.upcoming_predictions || []);
+        } else {
+            localStorage.removeItem('access_token');
+            window.location.href = '/signin';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        localStorage.removeItem('access_token');
+        window.location.href = '/signin';
+    });
+
+    document.querySelectorAll('.submit-prediction').forEach(button => {
+        button.addEventListener('click', function() {
+            // Logics for submitting prediction
+        });
+    });
+});
+</script>
+</body>
+</html>
