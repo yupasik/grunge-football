@@ -13,4 +13,3 @@ class Bet(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="bets")
     game = relationship("Game", back_populates="bets")
-
