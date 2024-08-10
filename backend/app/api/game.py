@@ -51,7 +51,7 @@ async def get_games(db: Session = Depends(get_db)):
     return games
 
 
-@router.get("/{game_id}", response_model=GameRead)
+@router.get("/games/{game_id}", response_model=GameRead)
 async def get_game(game_id: int, db: Session = Depends(get_db)):
     game = db.query(Game).filter(Game.id == game_id).first()
     if not game:
@@ -59,7 +59,7 @@ async def get_game(game_id: int, db: Session = Depends(get_db)):
     return game
 
 
-@router.put("/{game_id}", response_model=GameRead)
+@router.put("/games/{game_id}", response_model=GameRead)
 async def update_game(
     game_id: int,
     game: GameCreate,

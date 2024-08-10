@@ -13,6 +13,7 @@ class BetCreate(BetBase):
 
 class BetRead(BetBase):
     id: int
+    finished: bool
     owner_id: int
     points: int
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from ..db.database import Base
 
@@ -10,6 +10,7 @@ class Bet(Base):
     team1_score = Column(Integer)
     team2_score = Column(Integer)
     points = Column(Integer, default=0)
+    finished = Column(Boolean, default=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="bets")
     game = relationship("Game", back_populates="bets")

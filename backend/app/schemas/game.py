@@ -12,7 +12,7 @@ class GameBase(BaseModel):
 
 
 class GameCreate(GameBase):
-    pass
+    ...
 
 
 class GameRead(GameBase):

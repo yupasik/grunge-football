@@ -16,7 +16,7 @@ router = APIRouter()
 async def create_bet(
     bet: BetCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
     db_game = db.query(Game).filter(Game.id == bet.game_id).first()
     if not db_game:
@@ -30,7 +30,7 @@ async def create_bet(
 
     new_bet = Bet(
         game_id=bet.game_id,
-        owner_id=current_user.id,
+        owner_id=1,
         team1_score=bet.team1_score,
         team2_score=bet.team2_score,
         points=0,
@@ -46,7 +46,7 @@ async def update_bet(
     bet_id: int,
     bet: BetCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
     db_bet = (
         db.query(Bet).filter(Bet.id == bet_id, Bet.owner_id == current_user.id).first()
