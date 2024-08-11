@@ -15,6 +15,11 @@ class GameCreate(GameBase):
     ...
 
 
+class GameUpdate(BaseModel):
+    team1_score: int
+    team2_score: int
+
+
 class GameRead(GameBase):
     id: int
     finished: bool

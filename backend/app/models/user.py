@@ -14,3 +14,4 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
     total_points = Column(Integer, default=0)
     bets = relationship("Bet", back_populates="owner")
+    prizes = relationship("Prize", back_populates="user")

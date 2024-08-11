@@ -10,5 +10,5 @@ class Tournament(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     logo = Column(String)
     finished = Column(Boolean, default=False)
-
     games = relationship("Game", back_populates="tournament")
+    prizes = relationship("Prize", back_populates="tournament")

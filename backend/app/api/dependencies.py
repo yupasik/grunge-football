@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from ..models.user import User
 from ..db.database import SessionLocal, get_db
+from . import MSK
 
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
@@ -26,9 +27,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(tz=MSK) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=10000)
+        expire = datetime.now(tz=MSK) + timedelta(minutes=10000)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

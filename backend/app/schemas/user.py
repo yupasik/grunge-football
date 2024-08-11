@@ -40,6 +40,14 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+class UserPoints(BaseModel):
+    username: str
+    total_points: int
+
+    class Config:
+        from_attributes = True
+
+
 from .bet import (
     BetRead,
 )
