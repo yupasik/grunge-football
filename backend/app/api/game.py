@@ -18,10 +18,10 @@ router = APIRouter()
 async def create_game(
     game: GameCreate,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    # if not current_user.is_admin:
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     tournament = (
         db.query(Tournament)
@@ -108,16 +108,18 @@ async def delete_game(
 async def finish_game(
     game_id: int,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     db_game = db.query(Game).filter(Game.id == game_id).first()
     if not db_game:
         raise HTTPException(status_code=404, detail="Game not found")
-    # if not current_user.is_admin:
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Ensure the game has started before finishing it
-    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) > datetime.now(tz=MSK):
+    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) > datetime.now(
+        tz=MSK
+    ):
         raise HTTPException(
             status_code=400,
             detail="Cannot finish not started game",
@@ -125,13 +127,22 @@ async def finish_game(
 
     bets = db.query(Bet).filter(Bet.game_id == game_id).all()
     for bet in bets:
-        if bet.team1_score == db_game.team1_score and bet.team2_score == db_game.team2_score:
+        if (
+            bet.team1_score == db_game.team1_score
+            and bet.team2_score == db_game.team2_score
+        ):
             bet.points = 5  # Exact score match
-        elif bet.team1_score - bet.team2_score == db_game.team1_score - db_game.team2_score:
+        elif (
+            bet.team1_score - bet.team2_score
+            == db_game.team1_score - db_game.team2_score
+        ):
             bet.points = 3  # Correct goal difference but not exact score
         elif (
-                (bet.team1_score > bet.team2_score and db_game.team1_score > db_game.team2_score) or
-                (bet.team1_score < bet.team2_score and db_game.team1_score < db_game.team2_score)
+            bet.team1_score > bet.team2_score
+            and db_game.team1_score > db_game.team2_score
+        ) or (
+            bet.team1_score < bet.team2_score
+            and db_game.team1_score < db_game.team2_score
         ):
             bet.points = 1  # Correct outcome (win/loss)
         else:

@@ -23,14 +23,20 @@ async def create_bet(
     db_game = db.query(Game).filter(Game.id == bet.game_id).first()
     if not db_game:
         raise HTTPException(status_code=404, detail="Game not found")
-    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
+    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(
+        tz=MSK
+    ):
         raise HTTPException(
             status_code=400,
             detail="Cannot place or change bet after the game has started",
         )
 
     # Check if the user has already placed a bet on this game
-    if db.query(exists().where(Bet.game_id == bet.game_id).where(Bet.owner_id == current_user.id)).scalar():
+    if db.query(
+        exists()
+        .where(Bet.game_id == bet.game_id)
+        .where(Bet.owner_id == current_user.id)
+    ).scalar():
         raise HTTPException(
             status_code=400,
             detail="You have already placed a bet on this game",
@@ -57,16 +63,20 @@ async def update_bet(
     current_user: User = Depends(get_current_user),
 ):
     db_bet = (
-        db.query(Bet).filter(
+        db.query(Bet)
+        .filter(
             Bet.id == bet_id,
             Bet.owner_id == current_user.id,
-        ).first()
+        )
+        .first()
     )
     if not db_bet:
         raise HTTPException(status_code=404, detail="Bet not found")
 
     db_game = db.query(Game).filter(Game.id == db_bet.game_id).first()
-    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
+    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(
+        tz=MSK
+    ):
         raise HTTPException(
             status_code=400,
             detail="Cannot place or change bet after the game has started",

@@ -11,8 +11,7 @@ class GameBase(BaseModel):
     tournament_id: int
 
 
-class GameCreate(GameBase):
-    ...
+class GameCreate(GameBase): ...
 
 
 class GameUpdate(BaseModel):

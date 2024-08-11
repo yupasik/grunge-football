@@ -18,10 +18,10 @@ router = APIRouter()
 async def create_tournament(
     tournament: TournamentCreate,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    # if not current_user.is_admin:
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     existing_tournament = (
         db.query(Tournament).filter(Tournament.name == tournament.name).first()
@@ -42,9 +42,7 @@ async def create_tournament(
 
 @router.get("/tournaments", response_model=list[TournamentRead])
 async def get_tournaments(db: Session = Depends(get_db)):
-    print("Fetching tournaments")
     tournaments = db.query(Tournament).all()
-    print(f"Fetched {len(tournaments)} tournaments")
     return tournaments
 
 
@@ -109,24 +107,49 @@ async def finish_tournament(
             detail="Cannot finish the tournament until all games are finished",
         )
 
-    # Query top 3 users with highest points
-    users_points = (
-        db.query(User.id, User.username, User.total_points)
-        .join(Bet, Bet.owner_id == User.id)
-        .join(Game, Game.id == Bet.game_id)
-        .filter(Game.tournament_id == tournament_id)
-        .group_by(User.id)
-        .order_by(desc(User.total_points))
-        .limit(3)
-        .all()
+    # Calculate user points dynamically
+    user_points = {}
+
+    for game in db_tournament.games:
+        bets = db.query(Bet).filter(Bet.game_id == game.id).all()
+        for bet in bets:
+            user = bet.owner_id
+            if user not in user_points:
+                user_points[user] = {
+                    "total_points": 0,
+                    "exact_score_count": 0,
+                    "goal_difference_count": 0,
+                    "correct_outcome_count": 0,
+                }
+
+            user_points[user]["total_points"] += bet.points
+
+            if bet.points == 5:
+                user_points[user]["exact_score_count"] += 1
+            elif bet.points == 3:
+                user_points[user]["goal_difference_count"] += 1
+            elif bet.points == 1:
+                user_points[user]["correct_outcome_count"] += 1
+
+    # Rank users based on points and additional criteria
+    ranked_users = sorted(
+        user_points.items(),
+        key=lambda x: (
+            x[1]["total_points"],
+            x[1]["exact_score_count"],
+            x[1]["goal_difference_count"],
+            x[1]["correct_outcome_count"],
+        ),
+        reverse=True,
     )
 
-    for place, user_data in enumerate(users_points, start=1):
+    # Here, you can decide to create a record for the top 3 users as "prizes" in your Prize model
+    for rank, (user_id, points_data) in enumerate(ranked_users[:3], start=1):
         prize = Prize(
-            place=place,
-            points=user_data.total_points,
+            user_id=user_id,
             tournament_id=tournament_id,
-            user_id=user_data.id,
+            place=rank,
+            points=points_data["total_points"],
         )
         db.add(prize)
 
