@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './SignUp.css';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'http://localhost:8000/api';
 
 const SignUp = () => {
   const [username, setUsername] = useState('');
@@ -24,25 +24,24 @@ const SignUp = () => {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/api/signup`, {
+      const response = await axios.post(`${API_URL}/users`, {
         username,
         email,
         password
       });
 
-      const data = response.data;
-
-      if (data.success) {
-        setMessage('Account created successfully! Redirecting to login...');
-        setMessageClass('success');
-        setTimeout(() => window.location.href = '/signin.html', 2000);
-      } else {
-        setMessage(data.message || 'Registration failed.');
-        setMessageClass('error');
-      }
+      setMessage('Account created successfully! Redirecting to login...');
+      setMessageClass('success');
+      setTimeout(() => window.location.href = '/signin', 2000);
     } catch (error) {
       console.error('Error:', error);
-      setMessage('An error occurred. Please try again later.');
+      if (error.response) {
+        setMessage(error.response.data.detail || 'Registration failed.');
+      } else if (error.request) {
+        setMessage('No response from server. Please try again later.');
+      } else {
+        setMessage('An error occurred. Please try again.');
+      }
       setMessageClass('error');
     }
   };
@@ -50,7 +49,7 @@ const SignUp = () => {
   return (
     <div className="container">
       <h1>Sign Up</h1>
-      <form id="signupForm" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="username">
           Username:
           <input
@@ -97,9 +96,9 @@ const SignUp = () => {
         </label>
         <button type="submit">Sign Up</button>
       </form>
-      <div id="message" className={messageClass}>{message}</div>
+      <div className={messageClass}>{message}</div>
       <div className="login-link">
-        Already have an account? <a href="/signin.html">Sign In</a>
+        Already have an account? <a href="/signin">Sign In</a>
       </div>
     </div>
   );

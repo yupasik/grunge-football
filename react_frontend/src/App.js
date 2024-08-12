@@ -1,19 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import './App.css';
-import Home from './Home';
-import Account from './Account';
-import SignIn from './SignIn';
-import SignUp from './SignUp';
-import Dashboard from './Dashboard';
+import Home from './components/Home';
+import Account from './components/Account';
+import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
+import Dashboard from './components/Dashboard';
 
 function App() {
   return (
     <Router>
       <Switch>
         <Route exact path="/" component={Home} />
-        <Route path="/account" component={Account} />
-        <Route path="/signin" component={SignIn} />
+        <Route exact path="/account" component={Account} />
+        <Route exact path="/signin" component={SignIn} />
         <Route path="/signup" component={SignUp} />
         <Route path="/dashboard" component={Dashboard} />
       </Switch>

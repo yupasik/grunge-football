@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './SignIn.css';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'http://localhost:8000/api';
 
 const SignIn = () => {
   const [username, setUsername] = useState('');
@@ -16,10 +16,17 @@ const SignIn = () => {
     setMessageClass('');
 
     try {
-      const response = await axios.post(`${API_URL}/api/signin`, {
-        username,
-        password
-      });
+      const response = await axios.post(`${API_URL}/token`,
+        new URLSearchParams({
+          'username': username,
+          'password': password
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
 
       const data = response.data;
 
@@ -29,12 +36,18 @@ const SignIn = () => {
         localStorage.setItem('access_token', data.access_token);
         setTimeout(() => window.location.href = '/account', 2000);
       } else {
-        setMessage(data.detail || 'Login failed. Please check your credentials.');
+        setMessage('Login failed. Please check your credentials.');
         setMessageClass('error');
       }
     } catch (error) {
       console.error('Error:', error);
-      setMessage('An error occurred. Please try again later.');
+      if (error.response) {
+        setMessage(error.response.data.detail || 'An error occurred. Please try again.');
+      } else if (error.request) {
+        setMessage('No response from server. Please try again later.');
+      } else {
+        setMessage('An error occurred. Please try again.');
+      }
       setMessageClass('error');
     }
   };
@@ -42,9 +55,9 @@ const SignIn = () => {
   return (
     <div className="container">
       <h1>Sign In</h1>
-      <form id="signinForm" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="username">
-          Username or Email:
+          Username:
           <input
             type="text"
             id="username"
@@ -67,7 +80,7 @@ const SignIn = () => {
         </label>
         <button type="submit">Sign In</button>
       </form>
-      <div id="message" className={messageClass}>{message}</div>
+      <div className={messageClass}>{message}</div>
       <div className="signup-link">
         Don't have an account? <a href="/signup">Sign Up</a>
       </div>
