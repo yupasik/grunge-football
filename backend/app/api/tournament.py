@@ -150,6 +150,7 @@ async def finish_tournament(
             tournament_id=tournament_id,
             place=rank,
             points=points_data["total_points"],
+            tournament_name=db_tournament.name
         )
         db.add(prize)
 

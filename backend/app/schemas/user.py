@@ -17,6 +17,7 @@ class UserInDB(UserBase):
     is_admin: bool
     total_points: int
     bets: List["BetRead"] = []
+    prizes: List["PrizeRead"] = []
 
     class Config:
         from_attributes = True
@@ -48,6 +49,5 @@ class UserPoints(BaseModel):
         from_attributes = True
 
 
-from .bet import (
-    BetRead,
-)
+from .bet import BetRead
+from .prize import PrizeRead
