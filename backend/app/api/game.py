@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from ..db.database import get_db
 from ..models.game import Game
@@ -23,15 +24,9 @@ async def create_game(
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    tournament = (
-        db.query(Tournament)
-        .filter(Tournament.id == game.tournament_id, Tournament.finished == False)
-        .first()
-    )
+    tournament = db.query(Tournament).filter(Tournament.id == game.tournament_id, Tournament.finished == False).first()
     if not tournament:
-        raise HTTPException(
-            status_code=400, detail="Tournament must be open to add games"
-        )
+        raise HTTPException(status_code=400, detail="Tournament must be open to add games")
 
     new_game = Game(
         tournament_id=game.tournament_id,
@@ -73,8 +68,9 @@ async def update_game(
         raise HTTPException(status_code=404, detail="Game not found")
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+    if db_game.finished:
+        raise HTTPException(status_code=400, detail="Cannot update finished game")
 
-    # Update only team1_score and team2_score
     db_game.team1_score = game.team1_score
     db_game.team2_score = game.team2_score
 
@@ -89,18 +85,20 @@ async def delete_game(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    db_game = db.query(Game).filter(Game.id == game_id).first()
-    if not db_game:
-        raise HTTPException(status_code=404, detail="Game not found")
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    # Delete all bets associated with this game
-    db.query(Bet).filter(Bet.game_id == game_id).delete()
+    db_game = db.query(Game).filter(Game.id == game_id).first()
+    if not db_game:
+        raise HTTPException(status_code=404, detail="Game not found")
 
-    # Now delete the game
-    db.delete(db_game)
-    db.commit()
+    try:
+        with db.begin():
+            db.query(Bet).filter(Bet.game_id == game_id).delete()
+            db.delete(db_game)
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="An error occurred while deleting the game")
+
     return db_game
 
 
@@ -110,57 +108,40 @@ async def finish_game(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    db_game = db.query(Game).filter(Game.id == game_id).first()
-    if not db_game:
-        raise HTTPException(status_code=404, detail="Game not found")
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    # Ensure the game has started before finishing it
-    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) > datetime.now(
-        tz=MSK
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot finish not started game",
-        )
+    db_game = db.query(Game).filter(Game.id == game_id).first()
+    if not db_game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    if db_game.finished:
+        raise HTTPException(status_code=400, detail="Game is already finished")
 
-    bets = db.query(Bet).filter(Bet.game_id == game_id).all()
-    for bet in bets:
-        if (
-            bet.team1_score == db_game.team1_score
-            and bet.team2_score == db_game.team2_score
-        ):
-            bet.points = 5  # Exact score match
-        elif (
-            bet.team1_score - bet.team2_score
-            == db_game.team1_score - db_game.team2_score
-        ):
-            bet.points = 3  # Correct goal difference but not exact score
-        elif (
-            bet.team1_score > bet.team2_score
-            and db_game.team1_score > db_game.team2_score
-        ) or (
-            bet.team1_score < bet.team2_score
-            and db_game.team1_score < db_game.team2_score
-        ):
-            bet.points = 1  # Correct outcome (win/loss)
-        else:
-            bet.points = 0  # Incorrect prediction
-        bet.finished = True  # Mark bet as finished
+    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) > datetime.now(tz=MSK):
+        raise HTTPException(status_code=400, detail="Cannot finish not started game")
 
-    db.commit()
+    try:
+        with db.begin():
+            bets = db.query(Bet).filter(Bet.game_id == game_id).all()
+            for bet in bets:
+                if bet.team1_score == db_game.team1_score and bet.team2_score == db_game.team2_score:
+                    bet.points = 5
+                elif bet.team1_score - bet.team2_score == db_game.team1_score - db_game.team2_score:
+                    bet.points = 3
+                elif (bet.team1_score > bet.team2_score and db_game.team1_score > db_game.team2_score) or (
+                    bet.team1_score < bet.team2_score and db_game.team1_score < db_game.team2_score
+                ):
+                    bet.points = 1
+                else:
+                    bet.points = 0
+                bet.finished = True
+                db.query(User).filter(User.id == bet.owner_id).update({"total_points": User.total_points + bet.points})
 
-    # Batch update users' total points
-    for bet in bets:
-        db.query(User).filter(User.id == bet.owner_id).update(
-            {"total_points": User.total_points + bet.points}
-        )
+            db_game.finished = True
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="An error occurred while finishing the game")
 
-    db_game.finished = True
-    db.commit()
     db.refresh(db_game)
-
     return db_game
 
 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Optional
+from typing import list
 
 
 class GameBase(BaseModel):
@@ -24,7 +24,7 @@ class GameRead(GameBase):
     finished: bool
     team1_score: int
     team2_score: int
-    bets: List["BetRead"] = []
+    bets: list["BetRead"] = []
 
     class Config:
         from_attributes = True

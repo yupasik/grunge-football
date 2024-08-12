@@ -11,7 +11,6 @@ Base.metadata.create_all(engine)
 
 
 def get_db():
-    print("GET DB")
     db = SessionLocal()
     try:
         yield db

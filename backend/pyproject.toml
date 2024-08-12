@@ -23,6 +23,10 @@ bcrypt = "^4.2.0"
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
 
+[tool.black]
+line-length = 120
+target-version = ['py312']
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

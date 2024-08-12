@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import List
 
 
 class TournamentBase(BaseModel):
@@ -14,8 +13,8 @@ class TournamentCreate(TournamentBase):
 class TournamentRead(TournamentBase):
     id: int
     finished: bool
-    games: List["GameRead"] = []
-    prizes: List["PrizeRead"] = []
+    games: list["GameRead"] = []
+    prizes: list["PrizeRead"] = []
 
     class Config:
         from_attributes = True

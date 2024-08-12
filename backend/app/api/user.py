@@ -64,8 +64,6 @@ def read_user_me(current_user: User = Depends(get_current_user)):
 
 
 @router.get("/users/me/bets", response_model=list[BetRead])
-async def get_user_bets(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
-):
+async def get_user_bets(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     bets = db.query(Bet).filter(Bet.owner_id == current_user.id).all()
     return bets

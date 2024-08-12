@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from datetime import datetime
 from sqlalchemy import exists
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from ..db.database import get_db
 from ..models.bet import Bet
 from ..schemas.bet import BetCreate, BetRead
@@ -20,39 +21,39 @@ async def create_bet(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    db_game = db.query(Game).filter(Game.id == bet.game_id).first()
-    if not db_game:
-        raise HTTPException(status_code=404, detail="Game not found")
-    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(
-        tz=MSK
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot place or change bet after the game has started",
-        )
+    try:
+        with db.begin():
+            db_game = db.query(Game).filter(Game.id == bet.game_id).first()
+            if not db_game:
+                raise HTTPException(status_code=404, detail="Game not found")
+            if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot place or change bet after the game has started",
+                )
 
-    # Check if the user has already placed a bet on this game
-    if db.query(
-        exists()
-        .where(Bet.game_id == bet.game_id)
-        .where(Bet.owner_id == current_user.id)
-    ).scalar():
-        raise HTTPException(
-            status_code=400,
-            detail="You have already placed a bet on this game",
-        )
+            # Check if the user has already placed a bet on this game
+            if db.query(exists().where(Bet.game_id == bet.game_id).where(Bet.owner_id == current_user.id)).scalar():
+                raise HTTPException(
+                    status_code=400,
+                    detail="You have already placed a bet on this game",
+                )
 
-    new_bet = Bet(
-        game_id=bet.game_id,
-        owner_id=current_user.id,
-        team1_score=bet.team1_score,
-        team2_score=bet.team2_score,
-        points=0,
-    )
-    db.add(new_bet)
-    db.commit()
-    db.refresh(new_bet)
-    return new_bet
+            new_bet = Bet(
+                game_id=bet.game_id,
+                owner_id=current_user.id,
+                team1_score=bet.team1_score,
+                team2_score=bet.team2_score,
+                points=0,
+            )
+            db.add(new_bet)
+            db.flush()  # This will assign an ID to new_bet if it's using auto-increment
+
+        db.refresh(new_bet)
+        return new_bet
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while creating the bet")
 
 
 @router.put("/bets/{bet_id}", response_model=BetRead)
@@ -62,31 +63,34 @@ async def update_bet(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    db_bet = (
-        db.query(Bet)
-        .filter(
-            Bet.id == bet_id,
-            Bet.owner_id == current_user.id,
-        )
-        .first()
-    )
-    if not db_bet:
-        raise HTTPException(status_code=404, detail="Bet not found")
+    try:
+        with db.begin():
+            db_bet = (
+                db.query(Bet)
+                .filter(
+                    Bet.id == bet_id,
+                    Bet.owner_id == current_user.id,
+                )
+                .first()
+            )
+            if not db_bet:
+                raise HTTPException(status_code=404, detail="Bet not found")
 
-    db_game = db.query(Game).filter(Game.id == db_bet.game_id).first()
-    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(
-        tz=MSK
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot place or change bet after the game has started",
-        )
+            db_game = db.query(Game).filter(Game.id == db_bet.game_id).first()
+            if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot place or change bet after the game has started",
+                )
 
-    db_bet.team1_score = bet.team1_score
-    db_bet.team2_score = bet.team2_score
-    db.commit()
-    db.refresh(db_bet)
-    return db_bet
+            db_bet.team1_score = bet.team1_score
+            db_bet.team2_score = bet.team2_score
+
+        db.refresh(db_bet)
+        return db_bet
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while updating the bet")
 
 
 # @router.get("/bets", response_model=list[BetRead])
@@ -112,9 +116,7 @@ async def get_bets(
 
     if tournament_id:
         # Assuming that the Bet model has a relationship to Game, and Game has a relationship to Tournament
-        query = query.join(Bet.game).filter(
-            Bet.game.has(Game.tournament_id == tournament_id)
-        )
+        query = query.join(Bet.game).filter(Bet.game.has(Game.tournament_id == tournament_id))
 
     bets = query.all()
     return bets

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional
 
 
 class UserBase(BaseModel):
@@ -16,8 +16,8 @@ class UserInDB(UserBase):
     is_active: bool
     is_admin: bool
     total_points: int
-    bets: List["BetRead"] = []
-    prizes: List["PrizeRead"] = []
+    bets: list["BetRead"] = []
+    prizes: list["PrizeRead"] = []
 
     class Config:
         from_attributes = True
