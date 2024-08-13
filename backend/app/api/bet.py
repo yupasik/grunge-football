@@ -28,11 +28,11 @@ async def create_bet(
             db_game = db.query(Game).filter(Game.id == bet.game_id).first()
             if not db_game:
                 raise HTTPException(status_code=404, detail="Game not found")
-            # if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
-            #     raise HTTPException(
-            #         status_code=400,
-            #         detail="Cannot place or change bet after the game has started",
-            #     )
+            if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot place or change bet after the game has started",
+                )
 
             # Check if the user has already placed a bet on this game
             if db.query(exists().where(Bet.game_id == bet.game_id).where(Bet.owner_id == user_id)).scalar():

@@ -106,10 +106,10 @@ async def delete_game(
 async def finish_game(
     game_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    # if not current_user.is_admin:
+    #     raise HTTPException(status_code=403, detail="Not enough permissions")
 
     db_game = db.query(Game).filter(Game.id == game_id).first()
     if not db_game:
@@ -120,28 +120,30 @@ async def finish_game(
     if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) > datetime.now(tz=MSK):
         raise HTTPException(status_code=400, detail="Cannot finish not started game")
 
-    try:
-        with db.begin():
-            bets = db.query(Bet).filter(Bet.game_id == game_id).all()
-            for bet in bets:
-                if bet.team1_score == db_game.team1_score and bet.team2_score == db_game.team2_score:
-                    bet.points = 5
-                elif bet.team1_score - bet.team2_score == db_game.team1_score - db_game.team2_score:
-                    bet.points = 3
-                elif (bet.team1_score > bet.team2_score and db_game.team1_score > db_game.team2_score) or (
-                    bet.team1_score < bet.team2_score and db_game.team1_score < db_game.team2_score
-                ):
-                    bet.points = 1
-                else:
-                    bet.points = 0
-                bet.finished = True
-                db.query(User).filter(User.id == bet.owner_id).update({"total_points": User.total_points + bet.points})
+    bets = db.query(Bet).filter(Bet.game_id == game_id).all()
+    for bet in bets:
+        if bet.team1_score == db_game.team1_score and bet.team2_score == db_game.team2_score:
+            bet.points = 5  # Exact score match
+        elif bet.team1_score - bet.team2_score == db_game.team1_score - db_game.team2_score:
+            bet.points = 3  # Correct goal difference but not exact score
+        elif (bet.team1_score > bet.team2_score and db_game.team1_score > db_game.team2_score) or (
+            bet.team1_score < bet.team2_score and db_game.team1_score < db_game.team2_score
+        ):
+            bet.points = 1  # Correct outcome (win/loss)
+        else:
+            bet.points = 0  # Incorrect prediction
+        bet.finished = True  # Mark bet as finished
 
-            db_game.finished = True
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="An error occurred while finishing the game")
+    db.commit()
 
+    # Batch update users' total points
+    for bet in bets:
+        db.query(User).filter(User.id == bet.owner_id).update({"total_points": User.total_points + bet.points})
+
+    db_game.finished = True
+    db.commit()
     db.refresh(db_game)
+
     return db_game
 
 

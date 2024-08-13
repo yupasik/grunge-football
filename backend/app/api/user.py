@@ -18,8 +18,8 @@ router = APIRouter()
 
 @router.get("/users", response_model=list[UserInDB])
 async def get_all_users(
-        db: Session = Depends(get_db),
-        # current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    # current_user: User = Depends(get_current_user),
 ):
     # if not current_user.is_admin:
     #     raise HTTPException(status_code=403, detail="Not enough permissions")
