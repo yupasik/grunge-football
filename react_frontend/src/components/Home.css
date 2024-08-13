@@ -38,7 +38,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 20px 0;
-  /*border-bottom: 2px solid #444;*/
+  border-bottom: 2px solid #444;
 }
 
 h1 {
@@ -92,13 +92,13 @@ h1 {
   display: flex;
   align-items: center;
   flex-grow: 1;
+  flex-shrink: 0;
 }
 
 .tournament-logo-container {
   width: 50px;
   height: 50px;
   background-color: #DDDDDD;
-  display: flex;
   justify-content: center;
   align-items: center;
   border: 2px solid #ff3333; /* Red border */
@@ -107,68 +107,55 @@ h1 {
   margin-right: 10px;
   position: relative;
   flex-shrink: 0;
-  vertical-align: middle;
 }
 
 .tournament-logo {
-  width: 80%; /* Adjust to fit inside the square */
-  height: 80%; /* Adjust to fit inside the square */
+  width: 100%; /* Adjust to fit inside the square */
+  height: 100%; /* Adjust to fit inside the square */
   object-fit: contain;
   position: absolute;
   top: 50%;
   left: 50%;
-  max-width: 100%;
-  max-height: 100%;
   transform: translate(-50%, -50%);
 }
 
-.tournament-select {
-  flex-grow: 1;
-  margin-right: 10px;
-}
-
-.tournament-select, .sort-button {
-  margin-top: 20px;
-  padding: 10px 20px;
+.sort-button {
+  padding: 8px 15px;
   background-color: #ff3333;
   color: #1a1a1a;
-  border: none;
+  border: 2px solid #ddd;
   cursor: pointer;
   font-family: 'Special Elite', cursive;
   font-size: 16px;
   text-transform: uppercase;
   transition: all 0.3s ease;
   box-shadow: 3px 3px 0px #ddd;
-  flex-shrink: 0;
-  width: auto;
-  white-space: nowrap;
+  height: 45px;
+  width: 20%;
+  align-items: center;
 }
 
-.sort-button, .tournament-select {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #ff3333;
-    color: #1a1a1a;
-    cursor: pointer;
-    font-family: 'Special Elite', cursive;
-    font-size: 16px;
-    border: 2px solid #ddd;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    box-shadow: 3px 3px 0px #ddd;
+.tournament-select {
+  padding: 10px 20px;
+  background-color: #ff3333;
+  color: #1a1a1a;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  position: relative;
+  font-family: 'Special Elite', cursive;
+  font-size: 16px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 3px 3px 0px #ddd;
+  height: 45px;
+  top: -10px;
+  align-items: center;
 }
+
 .sort-button:hover, .tournament-select:hover {
     background-color: #ddd;
     color: #ff3333;
     box-shadow: 5px 5px 0px #ff3333;
-}
-
-.tournament-select {
-    flex-grow: 1;
-    background-color: #ff3333;
-    border: 2px solid #ddd;
-    color: #1a1a1a;
-    margin-right: 10px;
 }
 
 
