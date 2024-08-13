@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash';
 import PropTypes from 'prop-types';
+import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 
 const API_URL = 'http://localhost:8000/api';
@@ -69,11 +70,6 @@ function Home() {
         const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         return new Date(dateTimeString).toLocaleDateString('en-GB', options);
     };
-    //
-    // const formatDateTime = (dateTimeString) => {
-    //     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' };
-    //     return new Date(dateTimeString).toLocaleString('ru-RU', options);
-    // };
 
     const calculateTotalPoints = (userId) => {
         if (!tournamentData || !tournamentData.games) return 0;
@@ -217,7 +213,7 @@ function Home() {
         <div className="container">
             <div className="header-container">
                 <h1>GRUNGE FOOTBALL PREDICTIONS</h1>
-                <a href="/account" className="account-button">MY ACCOUNT</a>
+                <Link to="/account" className="account-button">MY ACCOUNT</Link>
             </div>
 
             <div className="football-banner">

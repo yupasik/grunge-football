@@ -9,11 +9,13 @@ body {
   line-height: 1.6;
 }
 
-#root {
-  max-width: 1200px;
+root {
+  max-width: 1600px;
   margin: 0 auto;
   background-color: #222;
   border: 3px solid #444;
-  padding: 20px;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+  padding: 15px;
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
 }
