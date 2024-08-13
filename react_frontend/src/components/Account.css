@@ -306,3 +306,132 @@ h1, h2, h3 {
 h1 {
   animation: flicker 2s infinite;
 }
+
+/* Existing styles remain the same */
+
+/* Mobile adaptations */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .container {
+    padding: 15px;
+  }
+
+  h1, h2, h3 {
+    font-size: 1.5em;
+    padding: 15px 0;
+  }
+
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .back-button, .admin-button {
+    margin-top: 10px;
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .profile-achievements {
+    flex-direction: column;
+  }
+
+  .profile-section, .achievements-section {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .predictions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prediction-card {
+    height: auto;
+  }
+
+  .match-info {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .team {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .prediction-input input {
+    width: 40px;
+    height: 40px;
+  }
+
+  .history-table, .tournaments-stats-table {
+    font-size: 0.9em;
+  }
+
+  .history-table th, .history-table td,
+  .tournaments-stats-table th, .tournaments-stats-table td {
+    padding: 8px;
+  }
+
+  .tournament-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tournament-icon {
+    margin-bottom: 10px;
+  }
+
+  .tournament-stats {
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    width: 50%;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  h1, h2, h3 {
+    font-size: 1.3em;
+    padding: 10px 0;
+  }
+
+  .achievement-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .prediction-input input {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9em;
+  }
+
+  .history-table, .tournaments-stats-table {
+    font-size: 0.8em;
+  }
+
+  .history-table th, .history-table td,
+  .tournaments-stats-table th, .tournaments-stats-table td {
+    padding: 6px;
+  }
+
+  .stat-value {
+    font-size: 1em;
+  }
+
+  .stat-label {
+    font-size: 0.7em;
+  }
+}

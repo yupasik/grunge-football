@@ -12,6 +12,7 @@ body {
 
 .container {
   max-width: 400px;
+  width: 100%;
   margin: 0 auto;
   background-color: #222;
   border: 3px solid #444;
@@ -19,6 +20,7 @@ body {
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .container::before {
@@ -42,6 +44,7 @@ h1 {
   border-bottom: 2px solid #444;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   letter-spacing: 2px;
+  animation: flicker 2s infinite;
 }
 
 form {
@@ -63,6 +66,8 @@ input {
   color: #ddd;
   padding: 10px;
   font-family: 'Special Elite', cursive;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 button {
@@ -75,6 +80,7 @@ button {
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Special Elite', cursive;
+  width: 100%;
 }
 
 button:hover {
@@ -114,6 +120,31 @@ button:hover {
   100% { opacity: 0.8; }
 }
 
-h1 {
-  animation: flicker 2s infinite;
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+  }
+
+  .container {
+    padding: 15px;
+    border-width: 2px;
+  }
+
+  h1 {
+    font-size: 24px;
+    padding: 15px 0;
+  }
+
+  form {
+    gap: 15px;
+  }
+
+  input, button {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .error, .success, .signup-link {
+    font-size: 0.85em;
+  }
 }

@@ -22,18 +22,20 @@ async def create_bet(
     current_user: User = Depends(get_current_user),
 ):
     try:
+        user_id = current_user.id
+        user_name = current_user.username
         with db.begin():
             db_game = db.query(Game).filter(Game.id == bet.game_id).first()
             if not db_game:
                 raise HTTPException(status_code=404, detail="Game not found")
-            if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
-                raise HTTPException(
-                    status_code=400,
-                    detail="Cannot place or change bet after the game has started",
-                )
+            # if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) <= datetime.now(tz=MSK):
+            #     raise HTTPException(
+            #         status_code=400,
+            #         detail="Cannot place or change bet after the game has started",
+            #     )
 
             # Check if the user has already placed a bet on this game
-            if db.query(exists().where(Bet.game_id == bet.game_id).where(Bet.owner_id == current_user.id)).scalar():
+            if db.query(exists().where(Bet.game_id == bet.game_id).where(Bet.owner_id == user_id)).scalar():
                 raise HTTPException(
                     status_code=400,
                     detail="You have already placed a bet on this game",
@@ -41,7 +43,8 @@ async def create_bet(
 
             new_bet = Bet(
                 game_id=bet.game_id,
-                owner_id=current_user.id,
+                owner_id=user_id,
+                owner_name=user_name,
                 team1_score=bet.team1_score,
                 team2_score=bet.team2_score,
                 points=0,
@@ -51,6 +54,7 @@ async def create_bet(
 
         db.refresh(new_bet)
         return new_bet
+
     except SQLAlchemyError:
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating the bet")

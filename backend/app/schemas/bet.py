@@ -15,6 +15,7 @@ class BetRead(BetBase):
     id: int
     finished: bool
     owner_id: int
+    owner_name: str
     points: int
 
     class Config:

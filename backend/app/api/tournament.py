@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -13,6 +14,11 @@ from ..models.prize import Prize
 from ..core.security import get_current_user
 
 router = APIRouter()
+security = HTTPBearer(
+    scheme_name="Bearer",
+    description="Enter your JWT token",
+    auto_error=False
+)
 
 
 @router.post("/tournaments", response_model=TournamentRead)

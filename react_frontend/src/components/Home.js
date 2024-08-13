@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
+import { debounce } from 'lodash';
+import PropTypes from 'prop-types';
 import './Home.css';
 
 const API_URL = 'http://localhost:8000/api';
+const SORT_BY_POINTS = 'SORT BY POINTS';
+const SORT_ALPHABETICALLY = 'SORT ALPHABETICALLY';
 
 function Home() {
   const [tournaments, setTournaments] = useState([]);
   const [currentTournamentId, setCurrentTournamentId] = useState(null);
   const [tournamentData, setTournamentData] = useState(null);
   const [isSortedByPoints, setIsSortedByPoints] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchTournaments();
+    return () => {
+      // Any cleanup code here
+    };
   }, []);
 
   useEffect(() => {
@@ -21,6 +30,8 @@ function Home() {
   }, [currentTournamentId]);
 
   const fetchTournaments = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await axios.get(`${API_URL}/tournaments`);
       setTournaments(response.data);
@@ -29,15 +40,23 @@ function Home() {
       }
     } catch (error) {
       console.error('Error fetching tournaments:', error);
+      setError('An error occurred while fetching tournaments. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchTournamentData = async (tournamentId) => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await axios.get(`${API_URL}/tournaments/${tournamentId}`);
       setTournamentData(response.data);
     } catch (error) {
       console.error('Error fetching tournament data:', error);
+      setError('An error occurred while fetching tournament data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,27 +75,26 @@ function Home() {
 
   const getParticipants = () => {
     if (!tournamentData || !tournamentData.games) return [];
-    const participantSet = new Set();
+    const participantMap = new Map();
     tournamentData.games.forEach(game => {
       game.bets.forEach(bet => {
-        participantSet.add(bet.owner_id);
+        if (!participantMap.has(bet.owner_id)) {
+          participantMap.set(bet.owner_id, { id: bet.owner_id, username: bet.owner_name || `User ${bet.owner_id}` });
+        }
       });
     });
-    return Array.from(participantSet).map(id => ({ id, username: `User ${id}` }));
+    return Array.from(participantMap.values());
   };
 
-  const sortParticipantsByTotalPoints = () => {
-    const participants = getParticipants();
-    return participants.sort((a, b) => calculateTotalPoints(b.id) - calculateTotalPoints(a.id));
+  const sortParticipantsByTotalPoints = (participants) => {
+    return [...participants].sort((a, b) => calculateTotalPoints(b.id) - calculateTotalPoints(a.id));
   };
 
-  const sortParticipantsAlphabetically = () => {
-    const participants = getParticipants();
-    return participants.sort((a, b) => a.username.localeCompare(b.username));
+  const sortParticipantsAlphabetically = (participants) => {
+    return [...participants].sort((a, b) => a.username.localeCompare(b.username));
   };
 
-  const findLeader = () => {
-    const participants = getParticipants();
+  const findLeader = (participants) => {
     let maxPoints = -1;
     let leaderId = null;
     participants.forEach(participant => {
@@ -93,19 +111,26 @@ function Home() {
     setIsSortedByPoints(!isSortedByPoints);
   };
 
-  const handleTournamentChange = (e) => {
-    setCurrentTournamentId(parseInt(e.target.value));
-    setIsSortedByPoints(false);
-  };
+  const debouncedHandleTournamentChange = useMemo(
+    () => debounce((value) => {
+      setCurrentTournamentId(parseInt(value));
+      setIsSortedByPoints(false);
+    }, 300),
+    []
+  );
+
+  const participants = useMemo(() => getParticipants(), [tournamentData]);
+  const sortedParticipants = useMemo(() =>
+    isSortedByPoints ? sortParticipantsByTotalPoints(participants) : sortParticipantsAlphabetically(participants),
+    [participants, isSortedByPoints]
+  );
+  const leaderId = useMemo(() => findLeader(participants), [participants]);
 
   const renderPredictionsTable = () => {
     if (!tournamentData || !tournamentData.games) return null;
 
-    const sortedParticipants = isSortedByPoints
-      ? sortParticipantsByTotalPoints()
-      : sortParticipantsAlphabetically();
-
-    const leaderId = findLeader();
+    // Sort games by start_time
+    const sortedGames = [...tournamentData.games].sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
     return (
       <div className="predictions-table-container">
@@ -127,12 +152,12 @@ function Home() {
             </tr>
           </thead>
           <tbody>
-            {tournamentData.games.map(game => (
+            {sortedGames.map(game => (
               <tr key={game.id} className={game.finished ? '' : 'future-match'}>
                 <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
-                <td data-label="GAME">{`${game.team1} vs ${game.team2}`}</td>
-                <td data-label="ACTUAL SCORE">
-                  {game.finished ? `${game.team1_score}-${game.team2_score}` : 'TBD'}
+                <td data-label="GAME">{`${game.team1.toUpperCase()} vs ${game.team2.toUpperCase()}`}</td>
+                <td data-label="SCORE">
+                  {game.finished ? `${game.team1_score}-${game.team2_score}` : '—'}
                 </td>
                 {sortedParticipants.map(participant => {
                   const bet = game.bets.find(b => b.owner_id === participant.id);
@@ -202,29 +227,38 @@ function Home() {
 
       <div className="controls">
         <div className="tournament-select-container">
-          <img
-            className="tournament-logo"
-            src={tournamentData ? tournamentData.logo : ''}
-            alt="Tournament logo"
-          />
+          <div className="tournament-logo-container">
+            <img
+              className="tournament-logo"
+              src={tournamentData ? tournamentData.logo : ''}
+              alt="Tournament logo"
+            />
+          </div>
           <select
             className="tournament-select"
             value={currentTournamentId || ''}
-            onChange={handleTournamentChange}
+            onChange={(e) => debouncedHandleTournamentChange(e.target.value)}
+            aria-label="Select tournament"
           >
             {tournaments.map(t => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
         </div>
-        <button className="sort-button" onClick={toggleSort}>
-          {isSortedByPoints ? 'SORT ALPHABETICALLY' : 'SORT BY POINTS'}
+        <button className="sort-button" onClick={toggleSort} aria-label="Toggle sort order">
+          {isSortedByPoints ? SORT_ALPHABETICALLY : SORT_BY_POINTS}
         </button>
       </div>
 
-      {renderPredictionsTable()}
+      {isLoading && <p>Loading...</p>}
+      {error && <p className="error">{error}</p>}
+      {!isLoading && !error && renderPredictionsTable()}
     </div>
   );
 }
+
+Home.propTypes = {
+  // Add props here if any
+};
 
 export default Home;

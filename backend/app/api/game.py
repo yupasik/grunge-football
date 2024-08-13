@@ -19,10 +19,10 @@ router = APIRouter()
 async def create_game(
     game: GameCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    # if not current_user.is_admin:
+    #     raise HTTPException(status_code=403, detail="Not enough permissions")
 
     tournament = db.query(Tournament).filter(Tournament.id == game.tournament_id, Tournament.finished == False).first()
     if not tournament:
@@ -61,13 +61,13 @@ async def update_game(
     game_id: int,
     game: GameUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
     db_game = db.query(Game).filter(Game.id == game_id).first()
     if not db_game:
         raise HTTPException(status_code=404, detail="Game not found")
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    # if not current_user.is_admin:
+    #     raise HTTPException(status_code=403, detail="Not enough permissions")
     if db_game.finished:
         raise HTTPException(status_code=400, detail="Cannot update finished game")
 
