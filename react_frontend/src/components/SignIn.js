@@ -16,17 +16,10 @@ const SignIn = () => {
     setMessageClass('');
 
     try {
-      const response = await axios.post(`${API_URL}/token`,
-        new URLSearchParams({
-          'username': username,
-          'password': password
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
+      const response = await axios.post(`${API_URL}/signin`, {
+        username,
+        password
+      });
 
       const data = response.data;
 
