@@ -26,12 +26,11 @@ h1, h2, h3 {
     justify-content: space-between;
     align-items: center;
     padding: 20px 0;
-    background: none;
     border-bottom: 2px solid #444;
 }
 
 .back-button, .admin-button {
-    padding: 10px 20px;
+    padding: 8px 15px;
     background-color: #ff3333;
     color: #1a1a1a;
     text-decoration: none;
@@ -39,8 +38,9 @@ h1, h2, h3 {
     font-weight: bold;
     border: 2px solid #ddd;
     transition: all 0.3s ease;
+    margin-top: 10px;
+    align-self: flex-end;
     box-shadow: 3px 3px 0px #ddd;
-    margin-left: 10px;
 }
 
 .back-button:hover, .admin-button:hover {
@@ -92,32 +92,45 @@ h1, h2, h3 {
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
     text-align: center;
 }
-
 .tournament-name {
   color: #ff3333;
-  font-size: 18px;
+  font-size: 12px;
   margin-bottom: 15px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   text-transform: uppercase;
 }
 
 .match-info {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
 }
 
 .team {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 17px;
   color: #ddd;
-  flex: 1;
-  text-align: center;
+  text-transform: uppercase;
 }
 
 .vs {
   color: #ff3333;
   margin: 0 10px;
+}
+
+.prediction-card .match-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prediction-card .team {
+  flex: 1;
+  text-align: center;
+}
+
+.prediction-card .vs {
+  padding: 0 10px;
   font-weight: bold;
 }
 
@@ -125,7 +138,20 @@ h1, h2, h3 {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-top: 20px;
     margin-bottom: 20px;
+}
+
+.red-text {
+    color: #ff3333;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+.game-date {
+    color: #ddd;
+    font-size: 14px;
+    text-shadow: 0 0 5px rgba(255, 240, 240, 0.6);
+    font-weight: normal;
 }
 
 .score-input {
@@ -160,4 +186,88 @@ h1, h2, h3 {
     background-color: #ddd;
     color: #ff3333;
     box-shadow: 5px 5px 0px #ff3333;
+}
+
+
+/* Существующие стили остаются без изменений */
+
+/* Добавляем медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .back-button, .admin-button {
+        margin-top: 10px;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .profile-achievements {
+        flex-direction: column;
+    }
+
+    .profile-section, .achievements-section {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .predictions-grid {
+        gap: 10px;
+    }
+
+    .prediction-card {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    .tournament-name {
+        font-size: 14px;
+    }
+
+    .team {
+        font-size: 14px;
+    }
+
+    .score-input {
+        width: 30px;
+        padding: 8px;
+        font-size: 16px;
+    }
+
+    .submit-prediction {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1, h2, h3 {
+        font-size: 18px;
+        padding: 10px 0;
+    }
+
+    .tournament-name {
+        font-size: 12px;
+    }
+
+    .team {
+        font-size: 12px;
+    }
+
+    .score-input {
+        width: 25px;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .submit-prediction {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
 }

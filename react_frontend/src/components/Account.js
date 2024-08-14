@@ -26,8 +26,10 @@ const Account = () => {
         const filteredAchievements = profileResponse.data.prizes.filter(prize => prize.place <= 3);
         setAchievements(filteredAchievements);
 
+        const betsResponse = await axios.get(`${API_URL}/users/me/bets`, config);
+
         // Filter bets to only include those that are not finished
-        const filteredBets = profileResponse.data.bets.filter(bet => !bet.finished);
+        const filteredBets = betsResponse.data.filter(bet => !bet.finished);
         setCurrentBets(filteredBets);
 
         // Set upcoming predictions similarly to currentBets
@@ -40,6 +42,18 @@ const Account = () => {
 
     fetchData();
   }, []);
+
+  const formatDateTime = (dateTimeString) => {
+    const options = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    };
+    return new Date(dateTimeString).toLocaleDateString('en-GB', options);
+};
 
   const handlePredictionSubmit = async (betId, team1Score, team2Score) => {
     try {
@@ -73,17 +87,18 @@ const Account = () => {
       <div className="profile-achievements">
         <div className="profile-section">
           <h2>Profile Information</h2>
-          <p><strong>Username:</strong> {profile.username}</p>
-          <p><strong>Email:</strong> {profile.email}</p>
-          <p><strong>Total Points:</strong> {profile.total_points}</p>
+          <p><strong>Username:</strong> <span className="red-text">{profile.username}</span></p>
+          <p><strong>Email:</strong> <span className="red-text">{profile.email}</span></p>
+          <p><strong>Total Points:</strong> <span className="red-text">{profile.total_points}</span></p>
         </div>
 
         <div className="achievements-section">
           <h2>Achievements</h2>
           {achievements.map((achievement, index) => (
-            <div key={index} className="achievement">
-              <div className="achievement-icon">🏆</div> {/* Assuming a trophy icon for all achievements */}
-              <div className="achievement-info">
+              <div key={index} className="achievement">
+                <div className="achievement-icon">🏆</div>
+                {/* Assuming a trophy icon for all achievements */}
+                <div className="achievement-info">
                 <div className="achievement-title">Place: {achievement.place}</div>
                 <div className="achievement-description">
                   Tournament: {achievement.tournament_name}
@@ -102,9 +117,14 @@ const Account = () => {
         <div className="predictions-grid">
           {upcomingPredictions.map((prediction, index) => (
               <div key={index} className="prediction-card">
-                <h3 className="tournament-name">{prediction.tournament_name}</h3>
+                <h3 className="tournament-name">
+                  <span className="tournament-name">{prediction.tournament_name}</span>
+                  <br/> {}
+                  <br/> {}
+                  <span className="game-date">[{formatDateTime(prediction.start_time)}]</span>
+                </h3>
                 <div className="match-info">
-                  <div className="team">{prediction.team1}</div>
+                <div className="team">{prediction.team1}</div>
                   <span className="vs">vs</span>
                   <div className="team">{prediction.team2}</div>
                 </div>

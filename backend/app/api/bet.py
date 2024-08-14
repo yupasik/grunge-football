@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..db.database import get_db
 from ..models.bet import Bet
 from ..schemas.bet import BetCreate, BetRead, BetUpdate
+from ..models.tournament import Tournament
 from ..models.user import User
 from ..models.game import Game
 from ..core.security import get_current_user
@@ -107,7 +108,8 @@ async def get_bets(
     tournament_id: Optional[int] = Query(None, description="Filter by tournament ID"),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Bet)
+    # Explicitly define join conditions
+    query = db.query(Bet).join(Game, Bet.game_id == Game.id).join(Tournament, Game.tournament_id == Tournament.id)
 
     if user_id:
         query = query.filter(Bet.owner_id == user_id)
@@ -116,11 +118,28 @@ async def get_bets(
         query = query.filter(Bet.game_id == game_id)
 
     if tournament_id:
-        # Assuming that the Bet model has a relationship to Game, and Game has a relationship to Tournament
-        query = query.join(Bet.game).filter(Bet.game.has(Game.tournament_id == tournament_id))
+        query = query.filter(Game.tournament_id == tournament_id)
 
-    bets = query.all()
-    return bets
+    # Select the necessary fields to avoid fetching too much data
+    bets = query.with_entities(
+        Bet,
+        Game.team1.label('team1'),
+        Game.team2.label('team2'),
+        Game.start_time.label('start_time'),
+        Tournament.name.label('tournament_name')
+    ).all()
+
+    # Enrich the Bet objects with the additional data
+    enriched_bets = []
+    for bet, team1, team2, start_time, tournament_name in bets:
+        bet.team1 = team1
+        bet.team2 = team2
+        bet.start_time = str(start_time)
+        bet.tournament_name = tournament_name
+        enriched_bets.append(bet)
+
+    return enriched_bets
+
 
 
 @router.get("/bets/{bet_id}", response_model=BetRead)
@@ -128,4 +147,13 @@ async def get_bet(bet_id: int, db: Session = Depends(get_db)):
     bet = db.query(Bet).filter(Bet.id == bet_id).first()
     if not bet:
         raise HTTPException(status_code=404, detail="Bet not found")
+    db_game = db.query(Game).filter(Game.id == bet.game_id).first()
+    if db_game:
+        # Fetch tournament details
+        tournament = db.query(Tournament).filter(Tournament.id == db_game.tournament_id).first()
+        # Enrich the bet with these details
+        bet.tournament_name = tournament.name if tournament else None
+        bet.team1 = db_game.team1
+        bet.team2 = db_game.team2
+        bet.start_time = str(db_game.start_time)
     return bet

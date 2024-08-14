@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class BetBase(BaseModel):
@@ -22,6 +23,10 @@ class BetRead(BetBase):
     owner_id: int
     owner_name: str
     points: int
+    team1: Optional[str] = ""
+    team2: Optional[str] = ""
+    tournament_name: Optional[str] = ""
+    start_time: Optional[str] = ""
 
     class Config:
         from_attributes = True

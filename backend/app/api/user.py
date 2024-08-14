@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from ..db.database import get_db
 from ..models.user import User
 from ..models.bet import Bet
+from ..models.game import Game
+from ..models.tournament import Tournament
 from ..schemas.user import UserCreate, UserInDB, UserSignIn, Token
 from ..schemas.bet import BetRead
 from ..core.security import (
@@ -76,6 +78,31 @@ def read_user_me(current_user: User = Depends(get_current_user)):
 
 
 @router.get("/users/me/bets", response_model=list[BetRead])
-async def get_user_bets(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    bets = db.query(Bet).filter(Bet.owner_id == current_user.id).all()
-    return bets
+async def get_user_bets(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Join Bet with Game and Tournament tables
+    query = db.query(Bet).join(Game, Bet.game_id == Game.id).join(Tournament, Game.tournament_id == Tournament.id)
+
+    # Filter by the current user's bets
+    query = query.filter(Bet.owner_id == current_user.id)
+
+    # Select the necessary fields and enrich the response
+    bets = query.with_entities(
+        Bet,
+        Game.team1.label('team1'),
+        Game.team2.label('team2'),
+        Game.start_time.label('start_time'),
+        Tournament.name.label('tournament_name')
+    ).all()
+
+    enriched_bets = []
+    for bet, team1, team2, start_time, tournament_name in bets:
+        bet.team1 = team1
+        bet.team2 = team2
+        bet.start_time = str(start_time)
+        bet.tournament_name = tournament_name
+        enriched_bets.append(bet)
+
+    return enriched_bets

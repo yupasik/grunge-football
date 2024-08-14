@@ -49,6 +49,22 @@ h1 {
   letter-spacing: 2px;
   /*animation: flicker 2s infinite;*/
 }
+h2 {
+  color: #ff3333;
+  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 2px;
+  /*animation: flicker 2s infinite;*/
+}
+h3 {
+  color: #ff3333;
+  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 2px;
+  /*animation: flicker 2s infinite;*/
+}
 
 .account-button {
   padding: 8px 15px;
