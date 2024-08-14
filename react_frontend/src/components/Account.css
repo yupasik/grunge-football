@@ -59,11 +59,12 @@ h1, h2, h3 {
     width: 48%;
 }
 
-.predictions-section {
+.predictions-section, .history-section, .tournaments-stats-section {
     padding: 20px;
     background-color: #1a1a1a;
     border-radius: 10px;
     margin-top: 30px;
+    margin-bottom: 60px;
 }
 
 .section-title {
@@ -189,9 +190,167 @@ h1, h2, h3 {
 }
 
 
-/* Существующие стили остаются без изменений */
+.tournament-account-select {
+    margin-top: 20px;
+    padding: 8px 15px;
+    background-color: #ff3333;
+    color: #1a1a1a;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    position: relative;
+    font-family: 'Special Elite', cursive;
+    font-size: 16px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 3px 3px 0px #ddd;
+    height: 45px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
 
-/* Добавляем медиа-запросы для адаптивности */
+.history-table, .tournaments-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.history-table th, .history-table td,
+.tournaments-stats-table th, .tournaments-stats-table td {
+    border: 1px solid #444;
+    padding: 10px;
+    text-align: left;
+}
+
+.history-table th, .tournaments-stats-table th {
+    background-color: #2a2a2a;
+    color: #ff3333;
+}
+
+.history-table tr:nth-child(even),
+.tournaments-stats-table tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+
+.points-3 {
+    color: #33ff33;
+}
+
+.points-1 {
+    color: #ffff33;
+}
+
+.points-0 {
+    color: #ff3333;
+}
+
+.tournament-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+
+.tournament-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+}
+
+.tournament-info {
+    flex-grow: 1;
+}
+
+.tournament-name {
+    font-weight: bold;
+    color: #ff3333;
+}
+
+.tournament-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #888;
+}
+
+.winner-badge {
+    background-color: #33ff33;
+    color: #1a1a1a;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+
+
+
+@keyframes submitPulse {
+  0% {
+    transform: scale(1);
+    background-color: #ff3333;
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: #00ff00;
+  }
+  100% {
+    transform: scale(1);
+    background-color: #ff3333;
+  }
+}
+
+.submit-prediction.game-started {
+  background-color: #666;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.submit-prediction.game-started:hover {
+  background-color: #666;
+  color: #999;
+  box-shadow: none;
+  transform: none;
+}
+
+.submit-prediction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit-prediction:disabled:hover {
+  background-color: #666;
+  color: #999;
+  box-shadow: none;
+  transform: none;
+}
+
+.submit-prediction.submitted {
+  animation: submitPulse 0.5s ease-in-out;
+}
+
+.submit-prediction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;

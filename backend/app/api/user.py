@@ -93,14 +93,18 @@ async def get_user_bets(
         Bet,
         Game.team1.label('team1'),
         Game.team2.label('team2'),
+        Game.team1_score.label('team1_score'),
+        Game.team2_score.label('team2_score'),
         Game.start_time.label('start_time'),
         Tournament.name.label('tournament_name')
     ).all()
 
     enriched_bets = []
-    for bet, team1, team2, start_time, tournament_name in bets:
+    for bet, team1, team2, team1_score, team2_score, start_time, tournament_name in bets:
         bet.team1 = team1
         bet.team2 = team2
+        bet.actual_team1_score = team1_score
+        bet.actual_team2_score = team2_score
         bet.start_time = str(start_time)
         bet.tournament_name = tournament_name
         enriched_bets.append(bet)
