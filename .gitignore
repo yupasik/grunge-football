@@ -9,6 +9,7 @@
 .idea/**/dictionaries
 .idea/**/shelf
 **/.DS_Store
+react_frontend/.DS_Store
 
 # AWS User-specific
 .idea/**/aws.xml
