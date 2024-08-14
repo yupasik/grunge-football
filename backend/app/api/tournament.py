@@ -137,7 +137,7 @@ async def finish_tournament(
                 reverse=True,
             )
 
-            for rank, (user_id, points_data) in enumerate(ranked_users[:3], start=1):
+            for rank, (user_id, points_data) in enumerate(ranked_users, start=1):
                 prize = Prize(
                     user_id=user_id,
                     tournament_id=tournament_id,
