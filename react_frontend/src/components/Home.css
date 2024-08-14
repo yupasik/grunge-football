@@ -11,27 +11,27 @@ body {
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1440px;
   margin: 0 auto;
   background-color: #222;
   border: 3px solid #444;
   padding: 15px;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
 }
 
-.container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="%23222"/><path d="M0 0 L100 100 M100 0 L0 100" stroke="%23333" stroke-width="0.5"/></svg>');
-  opacity: 0.1;
-  pointer-events: none;
-}
+/*.container::before {*/
+/*  content: "";*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  left: 0;*/
+/*  right: 0;*/
+/*  bottom: 0;*/
+/*  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="%23222"/><path d="M0 0 L100 100 M100 0 L0 100" stroke="%23333" stroke-width="0.5"/></svg>');*/
+/*  opacity: 0.1;*/
+/*  pointer-events: none;*/
+/*}*/
 
 .header-container {
   display: flex;
@@ -47,11 +47,11 @@ h1 {
   margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   letter-spacing: 2px;
-  animation: flicker 2s infinite;
+  /*animation: flicker 2s infinite;*/
 }
 
 .account-button {
-  padding: 10px 20px;
+  padding: 8px 15px;
   background-color: #ff3333;
   color: #1a1a1a;
   text-decoration: none;
@@ -85,19 +85,20 @@ h1 {
   justify-content: space-between;
   align-items: center;
   margin-top: 20px;
+  gap: 10px;
 }
 
 .tournament-select-container {
   display: flex;
   align-items: center;
   flex-grow: 1;
+  flex-shrink: 0;
 }
 
 .tournament-logo-container {
-  width: 50px; /* Adjust size as needed */
-  height: 50px; /* Adjust size as needed */
+  width: 50px;
+  height: 50px;
   background-color: #DDDDDD;
-  display: flex;
   justify-content: center;
   align-items: center;
   border: 2px solid #ff3333; /* Red border */
@@ -105,11 +106,12 @@ h1 {
   overflow: hidden;
   margin-right: 10px;
   position: relative;
+  flex-shrink: 0;
 }
 
 .tournament-logo {
-  width: 80%; /* Adjust to fit inside the square */
-  height: 80%; /* Adjust to fit inside the square */
+  width: 100%; /* Adjust to fit inside the square */
+  height: 100%; /* Adjust to fit inside the square */
   object-fit: contain;
   position: absolute;
   top: 50%;
@@ -117,28 +119,43 @@ h1 {
   transform: translate(-50%, -50%);
 }
 
-.tournament-select, .sort-button {
-  padding: 10px 20px;
+.sort-button {
+  padding: 8px 15px;
   background-color: #ff3333;
   color: #1a1a1a;
-  border: none;
+  border: 2px solid #ddd;
   cursor: pointer;
   font-family: 'Special Elite', cursive;
   font-size: 16px;
   text-transform: uppercase;
   transition: all 0.3s ease;
   box-shadow: 3px 3px 0px #ddd;
+  height: 45px;
+  width: 20%;
+  align-items: center;
 }
 
 .tournament-select {
-  flex-grow: 1;
-  margin-right: 10px;
+  padding: 8px 15px;
+  background-color: #ff3333;
+  color: #1a1a1a;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  position: relative;
+  font-family: 'Special Elite', cursive;
+  font-size: 16px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 3px 3px 0px #ddd;
+  height: 45px;
+  justify-content: center;
+  align-items: center;
 }
 
 .sort-button:hover, .tournament-select:hover {
-  background-color: #ddd;
-  color: #ff3333;
-  box-shadow: 5px 5px 0px #ff3333;
+    background-color: #ddd;
+    color: #ff3333;
+    box-shadow: 5px 5px 0px #ff3333;
 }
 
 .predictions-table-container {
@@ -150,7 +167,7 @@ h1 {
   width: 100%;
   border-collapse: separate;
   border-spacing: 2px;
-  font-size: 12px;
+  font-size: 13px;
   background-color: #2a2a2a;
 }
 .predictions-table th:hover {
@@ -244,11 +261,11 @@ h1 {
     background-color: #555;
 }
 
-.tournament-select-container {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-}
+/*.tournament-select-container {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    flex-grow: 1;*/
+/*}*/
 .current-match {
     background-color: #444 !important;
     animation: pulse 2s infinite;
@@ -314,6 +331,7 @@ h1 {
 
   .controls {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .tournament-logo-container {

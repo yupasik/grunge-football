@@ -7,6 +7,11 @@ class BetBase(BaseModel):
     team2_score: int
 
 
+class BetUpdate(BaseModel):
+    team1_score: int
+    team2_score: int
+
+
 class BetCreate(BetBase):
     pass
 

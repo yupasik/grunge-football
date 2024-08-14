@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
+from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
@@ -43,8 +44,16 @@ async def create_game(
 
 
 @router.get("/games", response_model=list[GameRead])
-async def get_games(db: Session = Depends(get_db)):
-    games = db.query(Game).all()
+async def get_games(
+    finished: Optional[bool] = Query(None),  # Optional query parameter for finished status
+    db: Session = Depends(get_db)
+):
+    query = db.query(Game)
+
+    if finished is not None:
+        query = query.filter(Game.finished == finished)
+
+    games = query.all()
     return games
 
 
