@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from datetime import datetime
+from datetime import datetime, timedelta
 from ..db.database import get_db
 from ..models.game import Game
 from ..schemas.game import GameCreate, GameRead, GameUpdate
@@ -11,7 +11,6 @@ from ..schemas.bet import BetRead
 from ..models.user import User
 from ..models.tournament import Tournament
 from ..core.security import get_current_user
-from . import MSK, ZERO
 
 router = APIRouter()
 
@@ -48,13 +47,19 @@ async def get_games(
     finished: Optional[bool] = Query(None),  # Optional query parameter for finished status
     db: Session = Depends(get_db)
 ):
-    query = db.query(Game)
+    query = db.query(Game, Tournament.name.label('tournament_name')).join(Tournament, Game.tournament_id == Tournament.id)
 
     if finished is not None:
         query = query.filter(Game.finished == finished)
 
     games = query.all()
-    return games
+    result = []
+    for game, tournament_name in games:
+        game_data = GameRead.from_orm(game)
+        game_data.tournament_name = tournament_name
+        result.append(game_data)
+
+    return result
 
 
 @router.get("/games/{game_id}", response_model=GameRead)
@@ -126,7 +131,7 @@ async def finish_game(
     if db_game.finished:
         raise HTTPException(status_code=400, detail="Game is already finished")
 
-    if datetime.fromtimestamp(db_game.start_time.timestamp(), tz=ZERO) > datetime.now(tz=MSK):
+    if db_game.start_time - timedelta(hours=3) > datetime.utcnow():
         raise HTTPException(status_code=400, detail="Cannot finish not started game")
 
     bets = db.query(Bet).filter(Bet.game_id == game_id).all()

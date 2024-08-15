@@ -357,6 +357,15 @@ h1, h2, h3 {
   cursor: not-allowed;
 }
 
+.prediction-card.bet-made {
+  box-shadow: 2px 2px 15px rgba(239, 0, 0, 0.78);
+}
+
+.prediction-card.no-bet {
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+}
+
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;

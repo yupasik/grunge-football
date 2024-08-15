@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -8,6 +10,7 @@ class GameBase(BaseModel):
     team1: str
     team2: str
     tournament_id: int
+    tournament_name: Optional[str] = ""
 
 
 class GameCreate(GameBase): ...
@@ -27,6 +30,7 @@ class GameRead(GameBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 
 from .bet import (

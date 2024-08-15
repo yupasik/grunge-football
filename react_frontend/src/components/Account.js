@@ -10,13 +10,14 @@ const Account = () => {
   const [profile, setProfile] = useState({});
   const [achievements, setAchievements] = useState([]);
   const [upcomingPredictions, setUpcomingPredictions] = useState([]);
-  const [currentBets, setCurrentBets] = useState([]);
+  const [tournamentStats, setTournamentStats] = useState([]);
   const [filteredBets, setFilteredBets] = useState([]);
   const [submittingBets, setSubmittingBets] = useState({});
   const [tournaments, setTournaments] = useState([]);
   const [finishedBets, setFinishedBets] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [allBets, setAllBets] = useState([]);
+  const [upcomingGames, setUpcomingGames] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -42,9 +43,11 @@ const Account = () => {
       setAchievements(filteredAchievements);
 
       const betsResponse = await axios.get(`${API_URL}/users/me/bets`, config);
-      setAllBets(betsResponse.data);
-      setUpcomingPredictions(betsResponse.data.filter(bet => !bet.finished));
-      setFinishedBets(betsResponse.data.filter(bet => bet.finished));
+      const allBets = betsResponse.data;
+      setAllBets(allBets);
+      const upcomingBets = allBets.filter(bet => !bet.finished);
+      setUpcomingPredictions(upcomingBets);
+      setFinishedBets(allBets.filter(bet => bet.finished));
 
       const tournamentsResponse = await axios.get(`${API_URL}/tournaments`, config);
       setTournaments(tournamentsResponse.data);
@@ -53,9 +56,50 @@ const Account = () => {
         setSelectedTournament(tournamentsResponse.data[0].id);
       }
 
+      const tournamentStats = processPrizesToStats(profileResponse.data.prizes);
+      setTournamentStats(tournamentStats);
+
+      // Fetch upcoming games
+      const gamesResponse = await axios.get(`${API_URL}/games?finished=false`, config);
+      const allUpcomingGames = gamesResponse.data;
+
+      // Filter out games that already have bets
+      const gamesWithoutBets = allUpcomingGames.filter(game =>
+        !upcomingBets.some(bet => bet.game_id === game.id)
+      );
+
+      setUpcomingGames(gamesWithoutBets);
+
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const processPrizesToStats = (prizes) => {
+    const groupedPrizes = prizes.reduce((acc, prize) => {
+      if (!acc[prize.tournament_id]) {
+        acc[prize.tournament_id] = [];
+      }
+      acc[prize.tournament_id].push(prize);
+      return acc;
+    }, {});
+
+    return Object.values(groupedPrizes).map(tournamentPrizes => {
+      const latestPrize = tournamentPrizes[tournamentPrizes.length - 1];
+      return {
+        name: latestPrize.tournament_name,
+        logo: latestPrize.logo || '',
+        is_winner: latestPrize.place === 1,
+        rank: getOrdinal(latestPrize.place),
+        points: latestPrize.points,
+      };
+    });
+  };
+
+  const getOrdinal = (n) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
 
   const filterBets = () => {
@@ -71,8 +115,18 @@ const Account = () => {
     return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm');
   };
 
+  const getMoscowTime = () => {
+    const now = new Date();
+    const currentTimeMs = now.getTime();
+    const localOffset = now.getTimezoneOffset();
+    const utcTimeMs = currentTimeMs + localOffset * 60 * 1000;
+    const moscowTimeMs = utcTimeMs + MOSCOW_TIMEZONE_OFFSET * 60 * 60 * 1000;
+    const moscow = new Date(moscowTimeMs);
+    return moscow;
+  };
+
   const isGameStarted = (startTime) => {
-    const moscowTime = addHours(new Date(), MOSCOW_TIMEZONE_OFFSET);
+    const moscowTime = getMoscowTime();
     return isBefore(parseISO(startTime), moscowTime);
   };
 
@@ -82,20 +136,30 @@ const Account = () => {
     });
   };
 
-  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime) => {
+  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId) => {
     if (isGameStarted(startTime)) {
       console.log("Game has already started. Cannot submit prediction.");
       return;
     }
-    setSubmittingBets(prev => ({ ...prev, [betId]: true }));
+    setSubmittingBets(prev => ({ ...prev, [gameId]: true }));
     try {
       const config = {
         headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       };
-      await axios.put(`${API_URL}/bets/${betId}`, {
-        team1_score: team1Score,
-        team2_score: team2Score
-      }, config);
+      if (betId) {
+        // Update existing bet
+        await axios.put(`${API_URL}/bets/${betId}`, {
+          team1_score: team1Score,
+          team2_score: team2Score
+        }, config);
+      } else {
+        // Create new bet
+        await axios.post(`${API_URL}/bets`, {
+          game_id: gameId,
+          team1_score: team1Score,
+          team2_score: team2Score
+        }, config);
+      }
 
       const button = document.getElementById(`submit-button-${betId}`);
       button.classList.add('submitted');
@@ -104,14 +168,90 @@ const Account = () => {
         button.classList.remove('submitted');
       }, 500);
 
-      const predictionsResponse = await axios.get(`${API_URL}/users/me/bets`, config);
-      const filteredBets = predictionsResponse.data.filter(bet => !bet.finished);
-      setUpcomingPredictions(filteredBets);
+      // Refresh data
+      fetchData();
     } catch (error) {
       console.error('Error submitting prediction:', error);
     } finally {
       setSubmittingBets(prev => ({ ...prev, [betId]: false }));
     }
+  };
+
+  const TournamentStat = ({ label, value }) => (
+    <div className="stat">
+      <div className="stat-value">{value}</div>
+      <div className="stat-label">{label}</div>
+    </div>
+  );
+
+  const TournamentRow = ({ name, logo, is_winner, rank, points }) => (
+    <div className="tournament-row">
+      <img src={logo} alt={name} className="tournament-icon"/>
+      <div className="tournament-info">
+        <div className="tournament-name">
+          {name} {is_winner && <span className="winner-badge">WINNER</span>}
+        </div>
+        <div className="tournament-stats">
+          <TournamentStat label="RANK" value={rank} />
+          <TournamentStat label="POINTS" value={points} />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPredictionCard = (item, isPrediction = false) => {
+    const cardClass = isPrediction ? 'bet-made' : 'no-bet';
+
+    return (
+      <div key={isPrediction ? item.id : `game-${item.id}`} className={`prediction-card ${cardClass}`}>
+        <h3 className="tournament-name">
+          <span className="tournament-name">{item.tournament_name}</span>
+          <br/>
+          <br/>
+          <span className="game-date">[ {formatDateTime(item.start_time)} ]</span>
+        </h3>
+        <div className="match-info">
+          <div className="team">{item.team1}</div>
+          <span className="vs">vs</span>
+          <div className="team">{item.team2}</div>
+        </div>
+        <div className="prediction-input">
+          <input
+            type="number"
+            min="0"
+            max="99"
+            placeholder="0"
+            id={`team1-score-${isPrediction ? item.id : `game-${item.id}`}`}
+            className="score-input"
+            defaultValue={isPrediction ? item.team1_score : ''}
+          />
+          <span className="separator">:</span>
+          <input
+            type="number"
+            min="0"
+            max="99"
+            placeholder="0"
+            id={`team2-score-${isPrediction ? item.id : `game-${item.id}`}`}
+            className="score-input"
+            defaultValue={isPrediction ? item.team2_score : ''}
+          />
+        </div>
+        <button
+          id={`submit-button-${isPrediction ? item.id : `game-${item.id}`}`}
+          className={`submit-prediction ${isGameStarted(item.start_time) ? 'game-started' : ''}`}
+          onClick={() => handlePredictionSubmit(
+            isPrediction ? item.id : null,
+            document.getElementById(`team1-score-${isPrediction ? item.id : `game-${item.id}`}`).value,
+            document.getElementById(`team2-score-${isPrediction ? item.id : `game-${item.id}`}`).value,
+            item.start_time,
+            isPrediction ? item.game_id : item.id
+          )}
+          disabled={submittingBets[isPrediction ? item.id : item.id] || isGameStarted(item.start_time)}
+        >
+          {submittingBets[isPrediction ? item.id : item.id] ? 'Submitting...' : isGameStarted(item.start_time) ? 'Game Started' : isPrediction ? 'Update bet' : 'Submit bet'}
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -155,60 +295,14 @@ const Account = () => {
         <div className="predictions-section">
           <h2>Upcoming Predictions</h2>
           <div className="predictions-grid">
-            {sortPredictions(upcomingPredictions).map((prediction, index) => (
-                <div key={index} className="prediction-card">
-                  <h3 className="tournament-name">
-                    <span className="tournament-name">{prediction.tournament_name}</span>
-                    <br/>
-                    <br/>
-                    <span className="game-date">[ {formatDateTime(prediction.start_time)} ]</span>
-                  </h3>
-                  <div className="match-info">
-                    <div className="team">{prediction.team1}</div>
-                    <span className="vs">vs</span>
-                    <div className="team">{prediction.team2}</div>
-                  </div>
-                  <div className="prediction-input">
-                    <input
-                        type="number"
-                        min="0"
-                        max="99"
-                        placeholder="0"
-                        id={`team1-score-${prediction.id}`}
-                        className="score-input"
-                        defaultValue={prediction.team1_score}  // Pre-fill with existing score
-                    />
-                    <span className="separator">:</span>
-                    <input
-                        type="number"
-                        min="0"
-                        max="99"
-                        placeholder="0"
-                        id={`team2-score-${prediction.id}`}
-                        className="score-input"
-                        defaultValue={prediction.team2_score}  // Pre-fill with existing score
-                    />
-                  </div>
-                  <button
-                      id={`submit-button-${prediction.id}`}
-                      className={`submit-prediction ${isGameStarted(prediction.start_time) ? 'game-started' : ''}`}
-                      onClick={() => handlePredictionSubmit(
-                          prediction.id,
-                          document.getElementById(`team1-score-${prediction.id}`).value,
-                          document.getElementById(`team2-score-${prediction.id}`).value,
-                          prediction.start_time
-                      )}
-                      disabled={submittingBets[prediction.id] || isGameStarted(prediction.start_time)}
-                  >
-                    {submittingBets[prediction.id] ? 'Submitting...' : isGameStarted(prediction.start_time) ? 'Game Started' : 'Submit bet'}
-                  </button>
-                </div>
-            ))}
+            {sortPredictions([...upcomingPredictions, ...upcomingGames]).map(item =>
+                renderPredictionCard(item, 'game_id' in item)
+            )}
           </div>
         </div>
 
         <div className="history-section">
-          <h2>Prediction History</h2>
+          <h2>Predictions History</h2>
           <select
               id="tournament-select"
               className="tournament-account-select"
@@ -244,68 +338,14 @@ const Account = () => {
         </div>
 
         <div className="tournaments-stats-section">
-          <h2>TOURNAMENTS STATS</h2>
-          <div className="tournament-row">
-            <img src="https://example.com/premier-league-icon.png" alt="Premier League" className="tournament-icon"/>
-            <div className="tournament-info">
-              <div className="tournament-name">PREMIER LEAGUE 2022/23 <span className="winner-badge">WINNER</span></div>
-              <div className="tournament-stats">
-                <div className="stat">
-                  <div className="stat-value">1st</div>
-                  <div className="stat-label">RANK</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">87</div>
-                  <div className="stat-label">POINTS</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">92%</div>
-                  <div className="stat-label">ACCURACY</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="tournament-row">
-            <img src="https://example.com/champions-league-icon.png" alt="Champions League"
-                 className="tournament-icon"/>
-            <div className="tournament-info">
-              <div className="tournament-name">CHAMPIONS LEAGUE 2022/23</div>
-              <div className="tournament-stats">
-                <div className="stat">
-                  <div className="stat-value">3rd</div>
-                  <div className="stat-label">RANK</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">72</div>
-                  <div className="stat-label">POINTS</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">85%</div>
-                  <div className="stat-label">ACCURACY</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="tournament-row">
-            <img src="https://example.com/world-cup-icon.png" alt="World Cup" className="tournament-icon"/>
-            <div className="tournament-info">
-              <div className="tournament-name">WORLD CUP 2022</div>
-              <div className="tournament-stats">
-                <div className="stat">
-                  <div className="stat-value">5th</div>
-                  <div className="stat-label">RANK</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">65</div>
-                  <div className="stat-label">POINTS</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">76%</div>
-                  <div className="stat-label">ACCURACY</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <h2>TOURNAMENTS HISTORY</h2>
+          {tournamentStats.length > 0 ? (
+              tournamentStats.map((tournament, index) => (
+                  <TournamentRow key={index} {...tournament} />
+              ))
+          ) : (
+              <p>No tournament stats available</p>
+          )}
         </div>
       </div>
   );

@@ -28,6 +28,7 @@ class BetRead(BetBase):
     tournament_name: Optional[str] = ""
     tournament_id: Optional[int] = None
     start_time: Optional[str] = ""
+    logo: Optional[str] = ""
     actual_team1_score: Optional[int] = None
     actual_team2_score: Optional[int] = None
 
