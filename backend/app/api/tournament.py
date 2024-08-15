@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends, Security
+from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Optional
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -42,8 +43,16 @@ async def create_tournament(
 
 
 @router.get("/tournaments", response_model=list[TournamentRead])
-async def get_tournaments(db: Session = Depends(get_db)):
-    tournaments = db.query(Tournament).all()
+async def get_tournaments(
+    finished: Optional[bool] = Query(None),  # Необязательный параметр запроса для фильтрации по статусу finished
+    db: Session = Depends(get_db)
+):
+    query = db.query(Tournament)
+
+    if finished is not None:
+        query = query.filter(Tournament.finished == finished)
+
+    tournaments = query.all()
     return tournaments
 
 

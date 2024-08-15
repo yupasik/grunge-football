@@ -5,236 +5,400 @@ import './Dashboard.css';
 const API_URL = 'http://localhost:8000/api';
 
 const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState('games');
   const [games, setGames] = useState([]);
   const [tournaments, setTournaments] = useState([]);
-  const [newGame, setNewGame] = useState({ tournament_id: '', team1: '', team2: '', start_time: '' });
-  const [newTournament, setNewTournament] = useState({ name: '', logo: null });
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetchGames();
-    fetchTournaments();
+    fetchData();
   }, []);
 
-  const fetchGames = async () => {
+  const fetchData = async () => {
     try {
       const config = {
         headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       };
-      const response = await axios.get(`${API_URL}/games`, config);
-      setGames(response.data);
+      const [gamesResponse, tournamentsResponse, usersResponse] = await Promise.all([
+        axios.get(`${API_URL}/games?finished=false`, config),
+        axios.get(`${API_URL}/tournaments?finished=false`, config),
+        axios.get(`${API_URL}/users`, config)
+      ]);
+      setGames(gamesResponse.data);
+      setTournaments(tournamentsResponse.data);
+      setUsers(usersResponse.data);
     } catch (error) {
-      console.error('Error fetching games:', error);
+      console.error('Error fetching data:', error);
     }
   };
 
-  const fetchTournaments = async () => {
-    try {
+  const GamesManagement = () => {
+    const [showCreateGame, setShowCreateGame] = useState(false);
+
+    const handleDeleteGame = async (gameId) => {
       const config = {
         headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       };
-      const response = await axios.get(`${API_URL}/tournaments`, config);
-      setTournaments(response.data);
-    } catch (error) {
-      console.error('Error fetching tournaments:', error);
-    }
-  };
+      if (window.confirm('Are you sure you want to delete this game?')) {
+        try {
+          await axios.delete(`${API_URL}/games/${gameId}`, config);
+          fetchData();
+        } catch (error) {
+          console.error('Error deleting game:', error);
+        }
+      }
+    };
 
-  const handleAddGame = async (e) => {
-    e.preventDefault();
-    try {
+    const handleFinishGame = async (gameId) => {
+      if (window.confirm('Are you sure you want to finish this game?')) {
+        const config = {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        };
+        try {
+          await axios.post(`${API_URL}/games/${gameId}/finish`, config);
+          fetchData();
+        } catch (error) {
+          console.error('Error finishing game:', error);
+        }
+      }
+    };
+
+    const handleUpdateScore = async (gameId) => {
+      const team1ScoreInput = document.getElementById(`team1-score-${gameId}`);
+      const team2ScoreInput = document.getElementById(`team2-score-${gameId}`);
+      const team1Score = team1ScoreInput.value;
+      const team2Score = team2ScoreInput.value;
       const config = {
         headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       };
-      await axios.post(`${API_URL}/games`, newGame, config);
-      setNewGame({ tournament_id: '', team1: '', team2: '', start_time: '' });
-      fetchGames();
-    } catch (error) {
-      console.error('Error adding game:', error);
-    }
+      try {
+        await axios.put(`${API_URL}/games/${gameId}`, {
+          team1_score: parseInt(team1Score),
+          team2_score: parseInt(team2Score)
+        }, config);
+        fetchData();
+      } catch (error) {
+        console.error('Error updating game score:', error);
+      }
+    };
+
+    const sortedGames = [...games].sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+    return (
+      <div className="games-management">
+        <button className="create-button" onClick={() => setShowCreateGame(true)}>Create New Game</button>
+        <div className="games-grid">
+          {sortedGames.map(game => (
+            <div key={game.id} className="game-card">
+              <h3>{game.title}</h3>
+              <p>{game.team1} vs {game.team2}</p>
+              <p>Start time: {new Date(game.start_time).toLocaleString()}</p>
+              <div className="score-input">
+                <input
+                  type="number"
+                  id={`team1-score-${game.id}`}
+                  defaultValue={game.team1_score}
+                /> :
+                <input
+                  type="number"
+                  id={`team2-score-${game.id}`}
+                  defaultValue={game.team2_score}
+                />
+                <button onClick={() => handleUpdateScore(game.id)}>Update Score</button>
+              </div>
+              <button onClick={() => handleDeleteGame(game.id)}>Delete</button>
+              <button onClick={() => handleFinishGame(game.id)}>Finish Game</button>
+            </div>
+          ))}
+        </div>
+        {showCreateGame && <CreateGameForm onClose={() => setShowCreateGame(false)} fetchData={fetchData} />}
+      </div>
+    );
   };
 
-  const handleAddTournament = async (e) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append('name', newTournament.name);
-      formData.append('logo', newTournament.logo);
+  const TournamentsManagement = () => {
+    const [showCreateTournament, setShowCreateTournament] = useState(false);
 
+    const handleDeleteTournament = async (tournamentId) => {
       const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          'Content-Type': 'multipart/form-data'
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      };
+      if (window.confirm('Are you sure you want to delete this tournament?')) {
+        try {
+          await axios.delete(`${API_URL}/tournaments/${tournamentId}`, config);
+          fetchData();
+        } catch (error) {
+          console.error('Error deleting tournament:', error);
+        }
+      }
+    };
+
+    const handleFinishTournament = async (tournamentId) => {
+      const config = {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      };
+      if (window.confirm('Are you sure you want to finish this tournament?')) {
+        try {
+          await axios.post(`${API_URL}/tournaments/${tournamentId}/finish`, config);
+          fetchData();
+        } catch (error) {
+          console.error('Error finishing tournament:', error);
+        }
+      }
+    };
+
+    return (
+      <div className="tournaments-management">
+        <button className="create-button" onClick={() => setShowCreateTournament(true)}>Create New Tournament</button>
+        <div className="tournaments-grid">
+          {tournaments.map(tournament => (
+            <div key={tournament.id} className="tournament-card">
+              <img src={tournament.logo} alt={tournament.name} className="tournament-logo" />
+              <h3>{tournament.name}</h3>
+              <button onClick={() => handleDeleteTournament(tournament.id)}>Delete</button>
+              <button onClick={() => handleFinishTournament(tournament.id)}>Finish Tournament</button>
+            </div>
+          ))}
+        </div>
+        {showCreateTournament && <CreateTournamentForm onClose={() => setShowCreateTournament(false)} fetchData={fetchData} />}
+      </div>
+    );
+  };
+
+  const UsersManagement = () => {
+    const handleToggleActive = async (userId, isActive) => {
+        const config = {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        };
+        try {
+          await axios.put(`${API_URL}/users/${userId}`, { is_active: isActive }, config);
+          fetchData();
+        } catch (error) {
+          console.error('Error updating user:', error);
         }
       };
-      await axios.post(`${API_URL}/tournaments`, formData, config);
-      setNewTournament({ name: '', logo: null });
-      fetchTournaments();
-    } catch (error) {
-      console.error('Error adding tournament:', error);
-    }
+
+      const handleToggleAdmin = async (userId, isAdmin) => {
+        const config = {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        };
+        console.log(isAdmin);
+        try {
+          await axios.put(`${API_URL}/users/${userId}`, { is_admin: isAdmin }, config);
+          fetchData();
+        } catch (error) {
+          console.error('Error updating user:', error);
+        }
+      };
+
+    return (
+      <div className="users-management">
+        <table className="users-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Active</th>
+              <th>Admin</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id}>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td>
+                  <label className="switch">
+                      <input
+                          type="checkbox"
+                          checked={user.is_active}
+                          onChange={() => handleToggleActive(user.id, !user.is_active)}
+                      />
+                      <span className="slider round"></span>
+                  </label>
+                </td>
+                  <td>
+                  <label className="switch">
+                      <input
+                          type="checkbox"
+                          checked={user.is_admin}
+                          onChange={() => handleToggleAdmin(user.id, !user.is_admin)}
+                      />
+                      <span className="slider round"></span>
+                  </label>
+                  </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
-  const handleFinishGame = async (gameId) => {
-    try {
-      const config = {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-      };
-      await axios.post(`${API_URL}/games/${gameId}/finish`, {}, config);
-      fetchGames();
-    } catch (error) {
-      console.error('Error finishing game:', error);
-    }
+  const CreateGameForm = ({ onClose, fetchData }) => {
+    const [formData, setFormData] = useState({
+      title: '',
+      start_time: '',
+      team1: '',
+      team2: '',
+      tournament_id: ''
+    });
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+    const config = {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+    };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        await axios.post(`${API_URL}/games`, formData, config);
+        fetchData();
+        onClose();
+      } catch (error) {
+        console.error('Error creating game:', error);
+      }
+    };
+
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <h2>Create New Game</h2>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Title"
+              required
+            />
+            <input
+              type="datetime-local"
+              name="start_time"
+              value={formData.start_time}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="text"
+              name="team1"
+              value={formData.team1}
+              onChange={handleChange}
+              placeholder="Team 1"
+              required
+            />
+            <input
+              type="text"
+              name="team2"
+              value={formData.team2}
+              onChange={handleChange}
+              placeholder="Team 2"
+              required
+            />
+            <select
+              name="tournament_id"
+              value={formData.tournament_id}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select Tournament</option>
+              {tournaments.map(tournament => (
+                <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
+              ))}
+            </select>
+            <button type="submit">Create Game</button>
+            <button type="button" onClick={onClose}>Cancel</button>
+          </form>
+        </div>
+      </div>
+    );
   };
 
-  const handleFinishTournament = async (tournamentId) => {
-    try {
-      const config = {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-      };
-      await axios.post(`${API_URL}/tournaments/${tournamentId}/finish`, {}, config);
-      fetchTournaments();
-    } catch (error) {
-      console.error('Error finishing tournament:', error);
-    }
+  const CreateTournamentForm = ({ onClose, fetchData }) => {
+    const [formData, setFormData] = useState({
+      name: '',
+      logo: ''
+    });
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+    const config = {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+    };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        await axios.post(`${API_URL}/tournaments`, formData, config);
+        fetchData();
+        onClose();
+      } catch (error) {
+        console.error('Error creating tournament:', error);
+      }
+    };
+
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <h2>Create New Tournament</h2>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Tournament Name"
+              required
+            />
+            <input
+              type="text"
+              name="logo"
+              value={formData.logo}
+              onChange={handleChange}
+              placeholder="Logo URL"
+              required
+            />
+            <button type="submit">Create Tournament</button>
+            <button type="button" onClick={onClose}>Cancel</button>
+          </form>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="container">
       <div className="header-container">
         <h1>ADMIN DASHBOARD</h1>
-        <a href="/account" className="back-button">BACK TO ACCOUNT</a>
+        <a href="/" className="back-button">BACK TO MAIN</a>
       </div>
 
-      <div className="admin-section">
-        <h2>MANAGE GAMES</h2>
-        <div className="admin-form">
-          <h3>Add New Game</h3>
-          <form onSubmit={handleAddGame}>
-            <div className="form-group">
-              <label htmlFor="game-tournament">Tournament:</label>
-              <select
-                id="game-tournament"
-                name="game-tournament"
-                value={newGame.tournament_id}
-                onChange={(e) => setNewGame({...newGame, tournament_id: e.target.value})}
-                required
-              >
-                <option value="">Select Tournament</option>
-                {tournaments.map(tournament => (
-                  <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label htmlFor="team1">Team 1:</label>
-              <input
-                type="text"
-                id="team1"
-                name="team1"
-                value={newGame.team1}
-                onChange={(e) => setNewGame({...newGame, team1: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="team2">Team 2:</label>
-              <input
-                type="text"
-                id="team2"
-                name="team2"
-                value={newGame.team2}
-                onChange={(e) => setNewGame({...newGame, team2: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="game-datetime">Game Date and Time:</label>
-              <input
-                type="datetime-local"
-                id="game-datetime"
-                name="game-datetime"
-                value={newGame.start_time}
-                onChange={(e) => setNewGame({...newGame, start_time: e.target.value})}
-                required
-              />
-            </div>
-            <button type="submit">Add Game</button>
-          </form>
-        </div>
-        <div className="game-list">
-          <h3>Upcoming Games</h3>
-          {games.map(game => (
-            <div key={game.id} className="game-item">
-              <div className="game-details">
-                <div className="game-tournament">{game.tournament_name}</div>
-                <div className="game-teams">
-                  <span>{game.team1}</span>
-                  <span>vs</span>
-                  <span>{game.team2}</span>
-                </div>
-                <div className="game-datetime">{new Date(game.start_time).toLocaleString()}</div>
-              </div>
-              <div className="game-actions">
-                <button className="finish-button" onClick={() => handleFinishGame(game.id)}>FINISH</button>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="tab-container">
+        <button
+          className={`tab-button ${activeTab === 'games' ? 'active' : ''}`}
+          onClick={() => setActiveTab('games')}
+        >
+          Games
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'tournaments' ? 'active' : ''}`}
+          onClick={() => setActiveTab('tournaments')}
+        >
+          Tournaments
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          Users
+        </button>
       </div>
 
-      <div className="divider"></div>
-
-      <div className="admin-section">
-        <h2>MANAGE TOURNAMENTS</h2>
-        <div className="admin-form">
-          <h3>Add New Tournament</h3>
-          <form onSubmit={handleAddTournament}>
-            <div className="form-group">
-              <label htmlFor="tournament-name">Tournament Name:</label>
-              <input
-                type="text"
-                id="tournament-name"
-                name="tournament-name"
-                value={newTournament.name}
-                onChange={(e) => setNewTournament({...newTournament, name: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="tournament-logo">Tournament Logo:</label>
-              <input
-                type="file"
-                id="tournament-logo"
-                name="tournament-logo"
-                accept="image/*"
-                onChange={(e) => setNewTournament({...newTournament, logo: e.target.files[0]})}
-                required
-              />
-            </div>
-            <button type="submit">Add Tournament</button>
-          </form>
-        </div>
-        <div className="tournament-list">
-          <h3>Existing Tournaments</h3>
-          <div className="tournament-category">
-            <h4>CURRENT TOURNAMENTS</h4>
-            {tournaments.filter(t => !t.finished).map(tournament => (
-              <div key={tournament.id} className="tournament-item">
-                <span className="tournament-name">{tournament.name}</span>
-                <button className="finish-button" onClick={() => handleFinishTournament(tournament.id)}>FINISH</button>
-              </div>
-            ))}
-          </div>
-          <div className="tournament-category">
-            <h4>FINISHED TOURNAMENTS</h4>
-            {tournaments.filter(t => t.finished).map(tournament => (
-              <div key={tournament.id} className="tournament-item">
-                <span className="tournament-name">{tournament.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {activeTab === 'games' && <GamesManagement />}
+      {activeTab === 'tournaments' && <TournamentsManagement />}
+      {activeTab === 'users' && <UsersManagement />}
     </div>
   );
 };

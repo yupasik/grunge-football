@@ -32,6 +32,11 @@ class UserSignIn(BaseModel):
     password: str
 
 
+class UserUpdate(BaseModel):
+    is_active: Optional[bool] = None
+    is_admin: Optional[bool] = None
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

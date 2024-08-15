@@ -5,7 +5,7 @@ from ..models.user import User
 from ..models.bet import Bet
 from ..models.game import Game
 from ..models.tournament import Tournament
-from ..schemas.user import UserCreate, UserInDB, UserSignIn, Token
+from ..schemas.user import UserCreate, UserInDB, UserSignIn, Token, UserUpdate
 from ..schemas.bet import BetRead
 from ..core.security import (
     hash_password,
@@ -37,7 +37,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     hashed_pw = hash_password(user.password)
-    new_user = User(username=user.username, email=user.email, hashed_password=hashed_pw)
+    new_user = User(username=user.username, email=user.email, hashed_password=hashed_pw, is_active=False)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -68,8 +68,36 @@ async def signin(user: UserSignIn, db: Session = Depends(get_db)):
     db_user = get_user(user.username, db)
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
+    if not db_user.is_active:
+        raise HTTPException(status_code=403, detail="User account is inactive")
     access_token = create_access_token(data={"sub": db_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.put("/users/{user_id}", response_model=UserInDB)
+async def update_user(
+    user_id: int,
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user_update.is_active is not None:
+        db_user.is_active = user_update.is_active
+
+    if user_update.is_admin is not None:
+        db_user.is_admin = user_update.is_admin
+
+    db.commit()
+    db.refresh(db_user)
+
+    return db_user
 
 
 @router.get("/users/me", response_model=UserInDB)
