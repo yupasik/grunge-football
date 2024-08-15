@@ -57,6 +57,7 @@ const Account = () => {
       }
 
       const tournamentStats = processPrizesToStats(profileResponse.data.prizes);
+      console.log(tournamentStats);
       setTournamentStats(tournamentStats);
 
       // Fetch upcoming games
@@ -73,6 +74,36 @@ const Account = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const Achievement = ({ place, tournamentName, points }) => {
+    const getIcon = (place) => {
+      switch (place) {
+        case 1: return '🥇';
+        case 2: return '🥈';
+        case 3: return '🥉';
+        default: return '🏆';
+      }
+    };
+
+    const getPlaceText = (place) => {
+      switch (place) {
+        case 1: return '1st Place';
+        case 2: return '2nd Place';
+        case 3: return '3rd Place';
+        default: return `${place}th Place`;
+      }
+    };
+
+    return (
+      <div className="achievement-card">
+        <div className="achievement-icon">{getIcon(place)}</div>
+        <div className="achievement-info">
+          <div className="achievement-tournament">{tournamentName}</div>
+          <div className="achievement-place">{getPlaceText(place)}</div>
+        </div>
+      </div>
+    );
   };
 
   const processPrizesToStats = (prizes) => {
@@ -184,20 +215,35 @@ const Account = () => {
     </div>
   );
 
-  const TournamentRow = ({ name, logo, is_winner, rank, points }) => (
-    <div className="tournament-row">
-      <img src={logo} alt={name} className="tournament-icon"/>
-      <div className="tournament-info">
-        <div className="tournament-name">
-          {name} {is_winner && <span className="winner-badge">WINNER</span>}
-        </div>
-        <div className="tournament-stats">
-          <TournamentStat label="RANK" value={rank} />
-          <TournamentStat label="POINTS" value={points} />
+  const TournamentRow = ({ name, logo, is_winner, rank, points }) => {
+    const renderLogo = () => {
+      if (!logo) {
+        return <div className="tournament-icon-placeholder">No Logo</div>;
+      }
+
+      if (logo.startsWith('data:image')) {
+        return <img src={logo} alt={name} className="tournament-icon" />;
+      } else {
+        return <img src={logo} alt={name} className="tournament-icon" />;
+      }
+    };
+
+    return (
+      <div className="tournament-card">
+        {renderLogo()}
+        <div className="tournament-info">
+          <div className="tournament-name">
+            {name}
+            {is_winner && <span className="winner-badge">WINNER</span>}
+          </div>
+          <div className="tournament-stats">
+            <TournamentStat label="RANK" value={rank} />
+            <TournamentStat label="POINTS" value={points} />
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPredictionCard = (item, isPrediction = false) => {
     const cardClass = isPrediction ? 'bet-made' : 'no-bet';
@@ -273,21 +319,14 @@ const Account = () => {
           </div>
 
           <div className="achievements-section">
-            <h2>Achievements</h2>
+            <h2>ACHIEVEMENTS</h2>
             {achievements.map((achievement, index) => (
-                <div key={index} className="achievement">
-                  <div className="achievement-icon">🏆</div>
-                  {/* Assuming a trophy icon for all achievements */}
-                  <div className="achievement-info">
-                    <div className="achievement-title">Place: {achievement.place}</div>
-                    <div className="achievement-description">
-                      Tournament: {achievement.tournament_name}
-                    </div>
-                    <div className="achievement-points">
-                      Points: {achievement.points}
-                    </div>
-                  </div>
-                </div>
+                <Achievement
+                    key={index}
+                    place={achievement.place}
+                    tournamentName={achievement.tournament_name}
+                    points={achievement.points}
+                />
             ))}
           </div>
         </div>
@@ -339,13 +378,15 @@ const Account = () => {
 
         <div className="tournaments-stats-section">
           <h2>TOURNAMENTS HISTORY</h2>
-          {tournamentStats.length > 0 ? (
-              tournamentStats.map((tournament, index) => (
-                  <TournamentRow key={index} {...tournament} />
-              ))
-          ) : (
-              <p>No tournament stats available</p>
-          )}
+          <div className="tournament-grid">
+            {tournamentStats.length > 0 ? (
+                tournamentStats.map((tournament, index) => (
+                    <TournamentRow key={index} {...tournament} />
+                ))
+            ) : (
+                <p>No tournament stats available</p>
+            )}
+          </div>
         </div>
       </div>
   );

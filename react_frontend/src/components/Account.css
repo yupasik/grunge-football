@@ -305,6 +305,141 @@ h1, h2, h3 {
 }
 
 
+.tournaments-stats-section {
+  margin-top: 2rem;
+}
+
+.tournament-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.tournament-card {
+    background-color: #2a2a2a;
+    padding: 1rem;
+    margin-top: 45px;
+    border: 2px solid #444;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.tournament-card:hover {
+  transform: translateY(-5px);
+}
+
+.tournament-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.tournament-info {
+  text-align: center;
+}
+
+.tournament-name {
+  font-weight: bold;
+    font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+
+.winner-badge {
+  background-color: #33ff33;
+  color: #000;
+  font-size: 0.8rem;
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-left: 5px;
+}
+
+.tournament-stats {
+  display: flex;
+  justify-content: space-around;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+@media (max-width: 768px) {
+  .tournament-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+.tournament-icon-placeholder {
+  width: 80px;
+  height: 80px;
+  background-color: #444;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #999;
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+}
+
+.tournament-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+  border-radius: 50%;
+}
+
+
+.achievement-card {
+  background-color: #2a2a2a;
+    margin-top: 0.5rem;
+  /*border-radius: 8px;*/
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+}
+
+.achievement-info {
+  flex-grow: 1;
+}
+
+.achievement-tournament {
+  font-size: 1.1rem;
+  font-weight: bold;
+    text-transform: uppercase;
+  color: #ff3333;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.3rem;
+}
+
+.achievement-place {
+  font-size: 1rem;
+  color: #33ff33;
+    text-shadow: 0 0 5px rgba(51, 255, 51, 0.5);
+}
+
 
 
 @keyframes submitPulse {
@@ -314,7 +449,7 @@ h1, h2, h3 {
   }
   50% {
     transform: scale(1.05);
-    background-color: #00ff00;
+    background-color: #33ff33;
   }
   100% {
     transform: scale(1);

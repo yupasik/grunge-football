@@ -73,7 +73,15 @@ async def signin(user: UserSignIn, db: Session = Depends(get_db)):
 
 
 @router.get("/users/me", response_model=UserInDB)
-def read_user_me(current_user: User = Depends(get_current_user)):
+def read_user_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    tournament_ids = [prize.tournament_id for prize in current_user.prizes]
+    tournaments = db.query(Tournament).filter(Tournament.id.in_(tournament_ids)).all()
+
+    tournament_logos = {tournament.id: tournament.logo for tournament in tournaments}
+
+    for prize in current_user.prizes:
+        prize.logo = tournament_logos.get(prize.tournament_id)
+
     return current_user
 
 
