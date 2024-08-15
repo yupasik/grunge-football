@@ -209,6 +209,12 @@ h1, h2, h3 {
     width: 100%;
 }
 
+.tournament-account-select:hover {
+    background-color: #ddd;
+    color: #ff3333;
+    box-shadow: 5px 5px 0px #ff3333;
+}
+
 .history-table, .tournaments-stats-table {
     width: 100%;
     border-collapse: collapse;

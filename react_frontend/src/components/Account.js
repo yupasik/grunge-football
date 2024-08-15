@@ -11,58 +11,70 @@ const Account = () => {
   const [achievements, setAchievements] = useState([]);
   const [upcomingPredictions, setUpcomingPredictions] = useState([]);
   const [currentBets, setCurrentBets] = useState([]);
-  const [tournamentStats, setTournamentStats] = useState([]);
-  const [finishedBets, setFinishedBets] = useState([]);
+  const [filteredBets, setFilteredBets] = useState([]);
   const [submittingBets, setSubmittingBets] = useState({});
   const [tournaments, setTournaments] = useState([]);
-  const [selectedTournament, setSelectedTournament] = useState('');
+  const [finishedBets, setFinishedBets] = useState([]);
+  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [allBets, setAllBets] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const config = {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-        };
-
-        const profileResponse = await axios.get(`${API_URL}/users/me`, config);
-
-        setProfile(profileResponse.data);
-
-        const filteredAchievements = profileResponse.data.prizes.filter(prize => prize.place <= 3);
-        setAchievements(filteredAchievements);
-
-        const betsResponse = await axios.get(`${API_URL}/users/me/bets`, config);
-        setCurrentBets(betsResponse.data.filter(bet => !bet.finished));
-        setFinishedBets(betsResponse.data.filter(bet => bet.finished));
-
-        setUpcomingPredictions(betsResponse.data.filter(bet => !bet.finished));
-        const tournamentsResponse = await axios.get(`${API_URL}/tournaments`, config);
-        setTournaments(tournamentsResponse.data);
-
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
     fetchData();
   }, []);
 
-  const handleTournamentChange = (e) => {
-    setSelectedTournament(e.target.value);
+  useEffect(() => {
+    if (selectedTournament !== null && allBets.length > 0) {
+      filterBets();
+    }
+  }, [selectedTournament, finishedBets]);
+
+  const fetchData = async () => {
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      };
+
+      const profileResponse = await axios.get(`${API_URL}/users/me`, config);
+
+      setProfile(profileResponse.data);
+
+      const filteredAchievements = profileResponse.data.prizes.filter(prize => prize.place <= 3);
+      setAchievements(filteredAchievements);
+
+      const betsResponse = await axios.get(`${API_URL}/users/me/bets`, config);
+      setAllBets(betsResponse.data);
+      setUpcomingPredictions(betsResponse.data.filter(bet => !bet.finished));
+      setFinishedBets(betsResponse.data.filter(bet => bet.finished));
+
+      const tournamentsResponse = await axios.get(`${API_URL}/tournaments`, config);
+      setTournaments(tournamentsResponse.data);
+
+      if (tournamentsResponse.data.length > 0) {
+        setSelectedTournament(tournamentsResponse.data[0].id);
+      }
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
-  const filteredFinishedBets = selectedTournament
-    ? finishedBets.filter(bet => bet.tournament_id === selectedTournament)
-    : finishedBets;
+  const filterBets = () => {
+    const filtered = allBets.filter(bet => bet.finished && bet.tournament_id === selectedTournament);
+    setFilteredBets(filtered);
+  };
+
+  const handleTournamentChange = (e) => {
+    setSelectedTournament(Number(e.target.value));
+  };
 
   const formatDateTime = (dateTimeString) => {
     return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm');
   };
 
   const isGameStarted = (startTime) => {
-  const moscowTime = addHours(new Date(), MOSCOW_TIMEZONE_OFFSET);
-  return isBefore(parseISO(startTime), moscowTime);
-
-};
+    const moscowTime = addHours(new Date(), MOSCOW_TIMEZONE_OFFSET);
+    return isBefore(parseISO(startTime), moscowTime);
+  };
 
   const sortPredictions = (predictions) => {
     return predictions.sort((a, b) => {
@@ -197,8 +209,12 @@ const Account = () => {
 
         <div className="history-section">
           <h2>Prediction History</h2>
-          <select id="tournament-select" className="tournament-account-select" onChange={handleTournamentChange}>
-            <option value="">Select a tournament</option>
+          <select
+              id="tournament-select"
+              className="tournament-account-select"
+              onChange={handleTournamentChange}
+              value={selectedTournament || ''}
+          >
             {tournaments.map(tournament => (
                 <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
             ))}
@@ -214,7 +230,7 @@ const Account = () => {
             </tr>
             </thead>
             <tbody>
-            {filteredFinishedBets.map(bet => (
+            {filteredBets.map(bet => (
                 <tr key={bet.id}>
                   <td>{formatDateTime(bet.start_time)}</td>
                   <td>{bet.team1} vs {bet.team2}</td>
