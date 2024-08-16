@@ -10,6 +10,8 @@ origins = [
     "http://127.0.0.1:80",
     "http://127.0.0.1",
     "http://localhost:5000",
+    "http://win-bet-ball.ru",
+    "https://win-bet-ball.ru",
 ]
 
 app = FastAPI()
