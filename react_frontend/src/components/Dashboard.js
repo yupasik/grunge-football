@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format, parseISO, addHours, isBefore, compareAsc } from 'date-fns';
 import axios from 'axios';
 import './Dashboard.css';
 
@@ -9,6 +10,20 @@ const Dashboard = () => {
   const [games, setGames] = useState([]);
   const [tournaments, setTournaments] = useState([]);
   const [users, setUsers] = useState([]);
+
+  const getMoscowTime = () => {
+    const now = new Date();
+    const currentTimeMs = now.getTime();
+    const localOffset = now.getTimezoneOffset() * 60 * 1000;
+    const utcTimeMs = currentTimeMs + localOffset;
+    const moscowTimeMs = utcTimeMs + 3 * 60 * 60 * 1000;
+    return new Date(moscowTimeMs);
+  };
+
+  const isGameStarted = (startTime) => {
+      const moscowTime = getMoscowTime();
+      return isBefore(parseISO(startTime), moscowTime);
+  };
 
   useEffect(() => {
     fetchData();
@@ -95,51 +110,54 @@ const Dashboard = () => {
     const sortedGames = [...games].sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
     return (
-      <div className="games-management">
-        <button className="create-button" onClick={() => setShowCreateGame(true)}>Create New Game</button>
-        <div className="games-grid">
-          {sortedGames.map(game => (
-            <div key={game.id} className="game-card">
-              <div className="game-header">
-                <h3>{game.tournament_name} - {game.title}</h3>
-                <p>{formatDate(game.start_time)}</p>
-              </div>
-              <div className="game-teams">
-                <div className="team">{game.team1}</div>
-                <div className="vs">vs</div>
-                <div className="team">{game.team2}</div>
-              </div>
-              <div className="game-score">
-                <input
-                  type="number"
-                  id={`team1-score-${game.id}`}
-                  defaultValue={game.team1_score}
-                />
-                <span>:</span>
-                <input
-                  type="number"
-                  id={`team2-score-${game.id}`}
-                  defaultValue={game.team2_score}
-                />
-              </div>
-              <div className="game-actions">
-                <button onClick={() => handleUpdateScore(game.id)}>UPDATE SCORE</button>
-                <button onClick={() => handleDeleteGame(game.id)}>DELETE</button>
-                {!game.is_finished && (
-                  <button onClick={() => handleFinishGame(game.id)}>FINISH GAME</button>
-                )}
-              </div>
+        <div className="games-management">
+            <button className="create-button" onClick={() => setShowCreateGame(true)}>Create New Game</button>
+            <div className="games-grid">
+                {sortedGames.map(game => (
+                    <div
+                        key={game.id}
+                        className={`game-card ${isGameStarted(game.start_time) ? 'game-card-started' : ''}`}
+                    >
+                        <div className="game-header">
+                            <h3>{game.tournament_name} - {game.title}</h3>
+                            <p>{formatDate(game.start_time)}</p>
+                        </div>
+                        <div className="game-teams">
+                            <div className="team">{game.team1}</div>
+                            <div className="vs">vs</div>
+                            <div className="team">{game.team2}</div>
+                        </div>
+                        <div className="game-score">
+                            <input
+                                type="number"
+                                id={`team1-score-${game.id}`}
+                                defaultValue={game.team1_score}
+                            />
+                            <span>:</span>
+                            <input
+                                type="number"
+                                id={`team2-score-${game.id}`}
+                                defaultValue={game.team2_score}
+                            />
+                        </div>
+                        <div className="game-actions">
+                            <button onClick={() => handleUpdateScore(game.id)}>UPDATE SCORE</button>
+                            <button onClick={() => handleDeleteGame(game.id)}>DELETE</button>
+                            {!game.is_finished && (
+                                <button onClick={() => handleFinishGame(game.id)}>FINISH GAME</button>
+                            )}
+                        </div>
+                    </div>
+                ))}
             </div>
-          ))}
+            {showCreateGame && (
+                <CreateGameForm
+                    onClose={() => setShowCreateGame(false)}
+                    fetchData={fetchData}
+                    tournaments={tournaments}
+                />
+            )}
         </div>
-        {showCreateGame && (
-          <CreateGameForm
-            onClose={() => setShowCreateGame(false)}
-            fetchData={fetchData}
-            tournaments={tournaments}
-          />
-        )}
-      </div>
     );
   };
 
@@ -181,7 +199,7 @@ const Dashboard = () => {
             {tournaments.map(tournament => (
                 <div key={tournament.id} className="tournament-card">
                   <div className="tournament-header">
-                    <div className="tournament-logo-container">
+                    <div className="tournament-logo-admin-container">
                       <img src={tournament.logo} alt={tournament.name} className="tournament-logo"/>
                     </div>
                     <h3 className="tournament-name">{tournament.name}</h3>
