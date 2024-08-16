@@ -17,6 +17,15 @@ const SignUp = () => {
     setMessage('');
     setMessageClass('');
 
+    // Username validation: only Latin letters and numbers
+    const usernamePattern = /^[a-zA-Z0-9]+$/;
+    if (!usernamePattern.test(username)) {
+      setMessage('Username must contain only Latin letters and numbers.');
+      setMessageClass('error');
+      return;
+    }
+
+    // Check if passwords match
     if (password !== confirmPassword) {
       setMessage('Passwords do not match.');
       setMessageClass('error');

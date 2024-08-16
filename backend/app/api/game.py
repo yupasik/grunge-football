@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timedelta
 from ..db.database import get_db
 from ..models.game import Game
@@ -108,14 +107,12 @@ async def delete_game(
     if not db_game:
         raise HTTPException(status_code=404, detail="Game not found")
 
-    try:
-        with db.begin():
-            db.query(Bet).filter(Bet.game_id == game_id).delete()
-            db.delete(db_game)
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="An error occurred while deleting the game")
+    # Delete all bets associated with this game
+    db.query(Bet).filter(Bet.game_id == game_id).delete()
 
-    return db_game
+    # Now delete the game
+    db.delete(db_game)
+    db.commit()
 
 
 @router.post("/games/{game_id}/finish", response_model=GameRead)
