@@ -83,13 +83,6 @@ async def update_bet(
     db.refresh(db_bet)
     return db_bet
 
-
-# @router.get("/bets", response_model=list[BetRead])
-# async def get_bets(db: Session = Depends(get_db)):
-#     bets = db.query(Bet).all()
-#     return bets
-
-
 @router.get("/bets", response_model=list[BetRead])
 async def get_bets(
     user_id: Optional[int] = Query(None, description="Filter by user ID"),

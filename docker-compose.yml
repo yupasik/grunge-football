@@ -13,6 +13,7 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     volumes:
       - ./backend:/app
     ports:
@@ -25,11 +26,12 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-    volumes:
-      - ./frontend:/usr/share/nginx/html
+      context: ./react_frontend
+      dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "5000:80"
+    environment:
+      - NODE_ENV=production
 
 volumes:
   postgres_data:

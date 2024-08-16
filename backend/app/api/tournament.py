@@ -44,7 +44,7 @@ async def create_tournament(
 
 @router.get("/tournaments", response_model=list[TournamentRead])
 async def get_tournaments(
-    finished: Optional[bool] = Query(None),  # Необязательный параметр запроса для фильтрации по статусу finished
+    finished: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
 ):
     query = db.query(Tournament)
@@ -98,10 +98,10 @@ async def update_tournament(
 async def finish_tournament(
     tournament_id: int,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    # if not current_user.is_admin:
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     db_tournament = db.query(Tournament).filter(Tournament.id == tournament_id).first()
     if not db_tournament:
