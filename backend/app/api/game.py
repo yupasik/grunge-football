@@ -45,9 +45,11 @@ async def create_game(
 @router.get("/games", response_model=list[GameRead])
 async def get_games(
     finished: Optional[bool] = Query(None),  # Optional query parameter for finished status
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    query = db.query(Game, Tournament.name.label('tournament_name')).join(Tournament, Game.tournament_id == Tournament.id)
+    query = db.query(Game, Tournament.name.label("tournament_name")).join(
+        Tournament, Game.tournament_id == Tournament.id
+    )
 
     if finished is not None:
         query = query.filter(Game.finished == finished)

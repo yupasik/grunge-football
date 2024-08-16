@@ -32,11 +32,7 @@ async def create_bet(
         )
 
     # Check if the user has already placed a bet on this game
-    if db.query(
-            exists()
-                    .where(Bet.game_id == bet.game_id)
-                    .where(Bet.owner_id == user_id)
-    ).scalar():
+    if db.query(exists().where(Bet.game_id == bet.game_id).where(Bet.owner_id == user_id)).scalar():
         raise HTTPException(
             status_code=400,
             detail="You have already placed a bet on this game",
@@ -116,14 +112,14 @@ async def get_bets(
     # Select the necessary fields to avoid fetching too much data
     bets = query.with_entities(
         Bet,
-        Game.team1.label('team1'),
-        Game.team2.label('team2'),
-        Game.team1_score.label('team1_score'),
-        Game.team2_score.label('team2_score'),
-        Game.start_time.label('start_time'),
-        Tournament.name.label('tournament_name'),
-        Tournament.logo.label('logo'),
-        Tournament.id.label('tournament_id')
+        Game.team1.label("team1"),
+        Game.team2.label("team2"),
+        Game.team1_score.label("team1_score"),
+        Game.team2_score.label("team2_score"),
+        Game.start_time.label("start_time"),
+        Tournament.name.label("tournament_name"),
+        Tournament.logo.label("logo"),
+        Tournament.id.label("tournament_id"),
     ).all()
 
     # Enrich the Bet objects with the additional data
@@ -140,7 +136,6 @@ async def get_bets(
         enriched_bets.append(bet)
 
     return enriched_bets
-
 
 
 @router.get("/bets/{bet_id}", response_model=BetRead)

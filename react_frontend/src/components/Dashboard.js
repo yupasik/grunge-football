@@ -82,6 +82,16 @@ const Dashboard = () => {
       }
     };
 
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = date.toLocaleString('default', { month: 'short' });
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${day} ${month} ${year} ${hours}:${minutes}`;
+    };
+
     const sortedGames = [...games].sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
     return (
@@ -90,28 +100,45 @@ const Dashboard = () => {
         <div className="games-grid">
           {sortedGames.map(game => (
             <div key={game.id} className="game-card">
-              <h3>{game.title}</h3>
-              <p>{game.team1} vs {game.team2}</p>
-              <p>Start time: {new Date(game.start_time).toLocaleString()}</p>
-              <div className="score-input">
+              <div className="game-header">
+                <h3>{game.tournament_name} - {game.title}</h3>
+                <p>{formatDate(game.start_time)}</p>
+              </div>
+              <div className="game-teams">
+                <div className="team">{game.team1}</div>
+                <div className="vs">vs</div>
+                <div className="team">{game.team2}</div>
+              </div>
+              <div className="game-score">
                 <input
                   type="number"
                   id={`team1-score-${game.id}`}
                   defaultValue={game.team1_score}
-                /> :
+                />
+                <span>:</span>
                 <input
                   type="number"
                   id={`team2-score-${game.id}`}
                   defaultValue={game.team2_score}
                 />
-                <button onClick={() => handleUpdateScore(game.id)}>Update Score</button>
               </div>
-              <button onClick={() => handleDeleteGame(game.id)}>Delete</button>
-              <button onClick={() => handleFinishGame(game.id)}>Finish Game</button>
+              <div className="game-actions">
+                <button onClick={() => handleUpdateScore(game.id)}>UPDATE SCORE</button>
+                <button onClick={() => handleDeleteGame(game.id)}>DELETE</button>
+                {!game.is_finished && (
+                  <button onClick={() => handleFinishGame(game.id)}>FINISH GAME</button>
+                )}
+              </div>
             </div>
           ))}
         </div>
-        {showCreateGame && <CreateGameForm onClose={() => setShowCreateGame(false)} fetchData={fetchData} />}
+        {showCreateGame && (
+          <CreateGameForm
+            onClose={() => setShowCreateGame(false)}
+            fetchData={fetchData}
+            tournaments={tournaments}
+          />
+        )}
       </div>
     );
   };
@@ -148,42 +175,49 @@ const Dashboard = () => {
     };
 
     return (
-      <div className="tournaments-management">
-        <button className="create-button" onClick={() => setShowCreateTournament(true)}>Create New Tournament</button>
-        <div className="tournaments-grid">
-          {tournaments.map(tournament => (
-            <div key={tournament.id} className="tournament-card">
-              <img src={tournament.logo} alt={tournament.name} className="tournament-logo" />
-              <h3>{tournament.name}</h3>
-              <button onClick={() => handleDeleteTournament(tournament.id)}>Delete</button>
-              <button onClick={() => handleFinishTournament(tournament.id)}>Finish Tournament</button>
-            </div>
-          ))}
+        <div className="tournaments-management">
+          <button className="create-button" onClick={() => setShowCreateTournament(true)}>Create New Tournament</button>
+          <div className="tournaments-grid">
+            {tournaments.map(tournament => (
+                <div key={tournament.id} className="tournament-card">
+                  <div className="tournament-header">
+                    <div className="tournament-logo-container">
+                      <img src={tournament.logo} alt={tournament.name} className="tournament-logo"/>
+                    </div>
+                    <h3 className="tournament-name">{tournament.name}</h3>
+                  </div>
+                  <div className="tournament-actions">
+                    <button onClick={() => handleDeleteTournament(tournament.id)}>DELETE</button>
+                    <button onClick={() => handleFinishTournament(tournament.id)}>FINISH TOURNAMENT</button>
+                  </div>
+                </div>
+            ))}
+          </div>
+          {showCreateTournament &&
+              <CreateTournamentForm onClose={() => setShowCreateTournament(false)} fetchData={fetchData}/>}
         </div>
-        {showCreateTournament && <CreateTournamentForm onClose={() => setShowCreateTournament(false)} fetchData={fetchData} />}
-      </div>
     );
   };
 
   const UsersManagement = () => {
     const handleToggleActive = async (userId, isActive) => {
-        const config = {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-        };
-        try {
-          await axios.put(`${API_URL}/users/${userId}`, { is_active: isActive }, config);
-          fetchData();
-        } catch (error) {
-          console.error('Error updating user:', error);
-        }
+      const config = {
+        headers: {Authorization: `Bearer ${localStorage.getItem('access_token')}`}
       };
+      try {
+        await axios.put(`${API_URL}/users/${userId}`, {is_active: isActive}, config);
+        fetchData();
+      } catch (error) {
+        console.error('Error updating user:', error);
+      }
+    };
 
-      const handleToggleAdmin = async (userId, isAdmin) => {
-        const config = {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-        };
-        console.log(isAdmin);
-        try {
+    const handleToggleAdmin = async (userId, isAdmin) => {
+      const config = {
+        headers: {Authorization: `Bearer ${localStorage.getItem('access_token')}`}
+      };
+      console.log(isAdmin);
+      try {
           await axios.put(`${API_URL}/users/${userId}`, { is_admin: isAdmin }, config);
           fetchData();
         } catch (error) {

@@ -45,7 +45,7 @@ async def create_tournament(
 @router.get("/tournaments", response_model=list[TournamentRead])
 async def get_tournaments(
     finished: Optional[bool] = Query(None),  # Необязательный параметр запроса для фильтрации по статусу finished
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     query = db.query(Tournament)
 
@@ -155,7 +155,7 @@ async def finish_tournament(
             tournament_id=tournament_id,
             place=rank,
             points=points_data["total_points"],
-            tournament_name=db_tournament.name
+            tournament_name=db_tournament.name,
         )
         db.add(prize)
 

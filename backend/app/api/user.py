@@ -76,10 +76,7 @@ async def signin(user: UserSignIn, db: Session = Depends(get_db)):
 
 @router.put("/users/{user_id}", response_model=UserInDB)
 async def update_user(
-    user_id: int,
-    user_update: UserUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    user_id: int, user_update: UserUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -114,10 +111,7 @@ def read_user_me(current_user: User = Depends(get_current_user), db: Session = D
 
 
 @router.get("/users/me/bets", response_model=list[BetRead])
-async def get_user_bets(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+async def get_user_bets(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # Join Bet with Game and Tournament tables
     query = db.query(Bet).join(Game, Bet.game_id == Game.id).join(Tournament, Game.tournament_id == Tournament.id)
 
@@ -127,14 +121,14 @@ async def get_user_bets(
     # Select the necessary fields and enrich the response
     bets = query.with_entities(
         Bet,
-        Game.team1.label('team1'),
-        Game.team2.label('team2'),
-        Game.team1_score.label('team1_score'),
-        Game.team2_score.label('team2_score'),
-        Game.start_time.label('start_time'),
-        Tournament.name.label('tournament_name'),
-        Tournament.logo.label('logo'),
-        Tournament.id.label('tournament_id')
+        Game.team1.label("team1"),
+        Game.team2.label("team2"),
+        Game.team1_score.label("team1_score"),
+        Game.team2_score.label("team2_score"),
+        Game.start_time.label("start_time"),
+        Tournament.name.label("tournament_name"),
+        Tournament.logo.label("logo"),
+        Tournament.id.label("tournament_id"),
     ).all()
 
     enriched_bets = []
