@@ -4,6 +4,8 @@ import axios from 'axios';
 import './Dashboard.css';
 
 const API_URL = 'http://localhost:8000/api';
+const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
+
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('games');
@@ -16,7 +18,7 @@ const Dashboard = () => {
     const currentTimeMs = now.getTime();
     const localOffset = now.getTimezoneOffset() * 60 * 1000;
     const utcTimeMs = currentTimeMs + localOffset;
-    const moscowTimeMs = utcTimeMs + 3 * 60 * 60 * 1000;
+    const moscowTimeMs = utcTimeMs + MOSCOW_TIMEZONE_OFFSET * 60 * 60 * 1000;
     return new Date(moscowTimeMs);
   };
 

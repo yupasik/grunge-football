@@ -4,10 +4,12 @@ import { debounce } from 'lodash';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
+import {isBefore, parseISO} from "date-fns";
 
 const API_URL = 'http://localhost:8000/api';
 const SORT_BY_POINTS = 'SORT BY POINTS';
 const SORT_ALPHABETICALLY = 'SORT ALPHABETICALLY';
+const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
 
 function Home() {
     const [tournaments, setTournaments] = useState([]);
@@ -58,13 +60,21 @@ function Home() {
         }
     };
 
-    const isGameStarted = (game) => {
-        const now = new Date();
-        const gameStartTime = new Date(game.start_time);
-        const moscowOffset = 3; // Moscow is UTC+3
-        const moscowNow = new Date(now.getTime() + (now.getTimezoneOffset() + moscowOffset * 60) * 60000);
-        return moscowNow > gameStartTime && !game.finished;
+    const getMoscowTime = () => {
+      const now = new Date();
+      const currentTimeMs = now.getTime();
+      const localOffset = now.getTimezoneOffset();
+      const utcTimeMs = currentTimeMs + localOffset * 60 * 1000;
+      const moscowTimeMs = utcTimeMs + MOSCOW_TIMEZONE_OFFSET * 60 * 60 * 1000;
+      const moscow = new Date(moscowTimeMs);
+      return moscow;
     };
+
+    const isGameStarted = (game) => {
+      const moscowTime = getMoscowTime();
+      return isBefore(parseISO(game.start_time), moscowTime) && !game.finished;
+    };
+
 
     const formatDateTime = (dateTimeString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -212,7 +222,7 @@ function Home() {
     return (
         <div className="container">
             <div className="header-container">
-                <h1>GRUNGE FOOTBALL PREDICTIONS</h1>
+                <h1>FOOTBALL PREDICTIONS</h1>
                 <Link to="/account" className="account-button">MY ACCOUNT</Link>
             </div>
 
