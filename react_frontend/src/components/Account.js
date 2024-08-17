@@ -5,7 +5,7 @@ import './Account.css';
 import { Link } from "react-router-dom";
 
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
-const API_URL = '/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const Account = () => {
   const [profile, setProfile] = useState({});

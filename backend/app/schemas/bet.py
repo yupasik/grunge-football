@@ -6,11 +6,13 @@ class BetBase(BaseModel):
     game_id: int
     team1_score: int
     team2_score: int
+    hidden: Optional[bool] = False
 
 
 class BetUpdate(BaseModel):
     team1_score: int
     team2_score: int
+    hidden: Optional[bool] = False
 
 
 class BetCreate(BetBase):

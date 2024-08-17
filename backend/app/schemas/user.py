@@ -15,6 +15,7 @@ class UserInDB(UserBase):
     id: int
     is_active: bool
     is_admin: bool
+    is_superadmin: Optional[bool] = False
     total_points: int
     bets: list["BetRead"] = []
     prizes: list["PrizeRead"] = []
