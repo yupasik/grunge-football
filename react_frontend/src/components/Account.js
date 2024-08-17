@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format, parseISO, addHours, isBefore, compareAsc } from 'date-fns';
 import './Account.css';
+import {Link} from "react-router-dom";
 
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
 const API_URL = '/api';
@@ -306,6 +307,7 @@ const Account = () => {
           <h1>MY ACCOUNT</h1>
           <div>
             <a href="/" className="back-button">BACK TO MAIN</a>
+            <a href="/" className="back-button">LOGIN</a>
             {profile.is_admin && <a href="/dashboard" className="admin-button">ADMIN</a>}
           </div>
         </div>
