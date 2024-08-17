@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format, parseISO, addHours, isBefore, compareAsc } from 'date-fns';
 import './Account.css';
+import {Link} from "react-router-dom";
 
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
 const API_URL = '/api';
@@ -18,9 +19,11 @@ const Account = () => {
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [allBets, setAllBets] = useState([]);
   const [upcomingGames, setUpcomingGames] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     fetchData();
+    checkAuthentication();
   }, []);
 
   useEffect(() => {
@@ -75,6 +78,11 @@ const Account = () => {
       console.error('Error fetching data:', error);
     }
   };
+
+  const checkAuthentication = () => {
+        const token = localStorage.getItem('access_token');
+        setIsAuthenticated(!!token);
+    };
 
   const Achievement = ({ place, tournamentName, points }) => {
     const getIcon = (place) => {
@@ -143,7 +151,7 @@ const Account = () => {
   };
 
   const formatDateTime = (dateTimeString) => {
-    return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm');
+    return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm') + " MSK";
   };
 
   const getMoscowTime = () => {
@@ -306,6 +314,9 @@ const Account = () => {
           <h1>MY ACCOUNT</h1>
           <div>
             <a href="/" className="back-button">BACK TO MAIN</a>
+            {!isAuthenticated && (
+              <Link to="/signin" className="login-button">LOGIN</Link>
+            )}
             {profile.is_admin && <a href="/dashboard" className="admin-button">ADMIN</a>}
           </div>
         </div>
@@ -365,7 +376,7 @@ const Account = () => {
             <tbody>
             {filteredBets.map(bet => (
                 <tr key={bet.id}>
-                  <td>{formatDateTime(bet.start_time)}</td>
+                  <td>{formatDateTime(bet.start_time)} MSK</td>
                   <td>{bet.team1} vs {bet.team2}</td>
                   <td>{bet.team1_score}–{bet.team2_score}</td>
                   <td>{bet.actual_team1_score}–{bet.actual_team2_score}</td>

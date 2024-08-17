@@ -18,9 +18,11 @@ function Home() {
     const [isSortedByPoints, setIsSortedByPoints] = useState(false);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
         fetchTournaments();
+        checkAuthentication();
     }, []);
 
     useEffect(() => {
@@ -58,6 +60,11 @@ function Home() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const checkAuthentication = () => {
+        const token = localStorage.getItem('access_token');
+        setIsAuthenticated(!!token);
     };
 
     const getMoscowTime = () => {
@@ -171,7 +178,7 @@ function Home() {
                                 const gameStarted = isGameStarted(game);
                                 return (
                                     <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
-                                        <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
+                                        <td data-label="DATE & TIME">{formatDateTime(game.start_time)} MSK</td>
                                         <td data-label="GAME">{`${game.team1?.toUpperCase() || 'TBA'} vs ${game.team2?.toUpperCase() || 'TBA'}`}</td>
                                         <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
                                             {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
@@ -223,7 +230,14 @@ function Home() {
         <div className="container">
             <div className="header-container">
                 <h1>FOOTBALL PREDICTIONS</h1>
-                <Link to="/account" className="account-button">MY ACCOUNT</Link>
+                {isAuthenticated ? (
+                    <Link to="/account" className="account-button">MY ACCOUNT</Link>
+                ) : (
+                    <>
+                        <Link to="/signin" className="login-button">LOGIN</Link>
+                        <Link to="/signup" className="login-button">REGISTER</Link>
+                    </>
+                )}
             </div>
 
             <div className="football-banner">
