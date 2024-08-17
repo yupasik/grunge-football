@@ -3,7 +3,7 @@ import { format, parseISO, addHours, isBefore, compareAsc } from 'date-fns';
 import axios from 'axios';
 import './Dashboard.css';
 
-const API_URL = 'http:/localhost:8000/api';
+const API_URL = '/api';
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
 
 
