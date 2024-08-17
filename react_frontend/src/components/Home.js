@@ -233,7 +233,10 @@ function Home() {
                 {isAuthenticated ? (
                     <Link to="/account" className="account-button">MY ACCOUNT</Link>
                 ) : (
-                    <Link to="/signin" className="login-button">LOGIN</Link>
+                    <>
+                        <Link to="/signin" className="login-button">LOGIN</Link>
+                        <Link to="/signup" className="login-button">REGISTER</Link>
+                    </>
                 )}
             </div>
 
