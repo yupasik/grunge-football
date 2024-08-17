@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { format, parseISO, addHours, isBefore, compareAsc } from 'date-fns';
+import { format, parseISO, isBefore, compareAsc } from 'date-fns';
 import './Account.css';
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
 const API_URL = '/api';
@@ -20,6 +20,7 @@ const Account = () => {
   const [allBets, setAllBets] = useState([]);
   const [upcomingGames, setUpcomingGames] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchData();
@@ -39,7 +40,6 @@ const Account = () => {
       };
 
       const profileResponse = await axios.get(`${API_URL}/users/me`, config);
-
       setProfile(profileResponse.data);
 
       const filteredAchievements = profileResponse.data.prizes.filter(prize => prize.place <= 3);
@@ -60,18 +60,13 @@ const Account = () => {
       }
 
       const tournamentStats = processPrizesToStats(profileResponse.data.prizes);
-      console.log(tournamentStats);
       setTournamentStats(tournamentStats);
 
-      // Fetch upcoming games
       const gamesResponse = await axios.get(`${API_URL}/games?finished=false`, config);
       const allUpcomingGames = gamesResponse.data;
-
-      // Filter out games that already have bets
       const gamesWithoutBets = allUpcomingGames.filter(game =>
         !upcomingBets.some(bet => bet.game_id === game.id)
       );
-
       setUpcomingGames(gamesWithoutBets);
 
     } catch (error) {
@@ -80,9 +75,9 @@ const Account = () => {
   };
 
   const checkAuthentication = () => {
-        const token = localStorage.getItem('access_token');
-        setIsAuthenticated(!!token);
-    };
+    const token = localStorage.getItem('access_token');
+    setIsAuthenticated(!!token);
+  };
 
   const Achievement = ({ place, tournamentName, points }) => {
     const getIcon = (place) => {
@@ -160,8 +155,7 @@ const Account = () => {
     const localOffset = now.getTimezoneOffset();
     const utcTimeMs = currentTimeMs + localOffset * 60 * 1000;
     const moscowTimeMs = utcTimeMs + MOSCOW_TIMEZONE_OFFSET * 60 * 60 * 1000;
-    const moscow = new Date(moscowTimeMs);
-    return moscow;
+    return new Date(moscowTimeMs);
   };
 
   const isGameStarted = (startTime) => {
@@ -170,9 +164,7 @@ const Account = () => {
   };
 
   const sortPredictions = (predictions) => {
-    return predictions.sort((a, b) => {
-      return compareAsc(parseISO(a.start_time), parseISO(b.start_time));
-    });
+    return predictions.sort((a, b) => compareAsc(parseISO(a.start_time), parseISO(b.start_time)));
   };
 
   const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId) => {
@@ -186,13 +178,11 @@ const Account = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       };
       if (betId) {
-        // Update existing bet
         await axios.put(`${API_URL}/bets/${betId}`, {
           team1_score: team1Score,
           team2_score: team2Score
         }, config);
       } else {
-        // Create new bet
         await axios.post(`${API_URL}/bets`, {
           game_id: gameId,
           team1_score: team1Score,
@@ -202,12 +192,10 @@ const Account = () => {
 
       const button = document.getElementById(`submit-button-${betId}`);
       button.classList.add('submitted');
-
       setTimeout(() => {
         button.classList.remove('submitted');
       }, 500);
 
-      // Refresh data
       fetchData();
     } catch (error) {
       console.error('Error submitting prediction:', error);
@@ -228,12 +216,7 @@ const Account = () => {
       if (!logo) {
         return <div className="tournament-icon-placeholder">No Logo</div>;
       }
-
-      if (logo.startsWith('data:image')) {
-        return <img src={logo} alt={name} className="tournament-icon" />;
-      } else {
-        return <img src={logo} alt={name} className="tournament-icon" />;
-      }
+      return <img src={logo} alt={name} className="tournament-icon" />;
     };
 
     return (
@@ -253,13 +236,21 @@ const Account = () => {
     );
   };
 
+  const validateScores = (score1, score2, cardId) => {
+    if (score1 === '' || score2 === '') {
+      setErrors(prev => ({ ...prev, [cardId]: 'Please enter a score for both teams' }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, [cardId]: '' }));
+    return true;
+  };
+
   const renderPredictionCard = (item, isPrediction = false) => {
     const cardClass = isPrediction ? 'bet-made' : 'no-bet';
     const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id } = item;
     const cardId = isPrediction ? id : `game-${id}`;
     const gameStarted = isGameStarted(start_time);
     const isSubmitting = submittingBets[cardId];
-    const [error, setError] = useState('');
 
     const getButtonText = () => {
       if (isSubmitting) return 'Submitting...';
@@ -267,20 +258,11 @@ const Account = () => {
       return isPrediction ? 'Update bet' : 'Submit bet';
     };
 
-    const validateScores = (score1, score2) => {
-      if (score1 === '' || score2 === '') {
-        setError('Please enter a score for both teams');
-        return false;
-      }
-      setError('');
-      return true;
-    };
-
     const handleSubmit = () => {
       const team1Score = document.getElementById(`team1-score-${cardId}`).value;
       const team2Score = document.getElementById(`team2-score-${cardId}`).value;
 
-      if (!validateScores(team1Score, team2Score)) {
+      if (!validateScores(team1Score, team2Score, cardId)) {
         return;
       }
 
@@ -329,7 +311,7 @@ const Account = () => {
             aria-label={`Score for ${team2}`}
           />
         </div>
-        {error && <div className="error-message" role="alert">{error}</div>}
+        {errors[cardId] && <div className="error-message" role="alert">{errors[cardId]}</div>}
         <button
           id={`submit-button-${cardId}`}
           className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
@@ -343,62 +325,62 @@ const Account = () => {
   };
 
   return (
-      <div className="container">
-        <div className="header-container">
-          <h1>MY ACCOUNT</h1>
-          <div>
-            <a href="/" className="back-button">BACK TO MAIN</a>
-            {!isAuthenticated && (
-              <Link to="/signin" className="login-button">LOGIN</Link>
-            )}
-            {profile.is_admin && <a href="/dashboard" className="admin-button">ADMIN</a>}
-          </div>
+    <div className="container">
+      <div className="header-container">
+        <h1>MY ACCOUNT</h1>
+        <div>
+          <a href="/" className="back-button">BACK TO MAIN</a>
+          {!isAuthenticated && (
+            <Link to="/signin" className="login-button">LOGIN</Link>
+          )}
+          {profile.is_admin && <a href="/dashboard" className="admin-button">ADMIN</a>}
+        </div>
+      </div>
+
+      <div className="profile-achievements">
+        <div className="profile-section">
+          <h2>Profile Information</h2>
+          <p><strong>Username:</strong> <span className="red-text">{profile.username}</span></p>
+          <p><strong>Email:</strong> <span className="red-text">{profile.email}</span></p>
+          <p><strong>Total Points:</strong> <span className="red-text">{profile.total_points}</span></p>
         </div>
 
-        <div className="profile-achievements">
-          <div className="profile-section">
-            <h2>Profile Information</h2>
-            <p><strong>Username:</strong> <span className="red-text">{profile.username}</span></p>
-            <p><strong>Email:</strong> <span className="red-text">{profile.email}</span></p>
-            <p><strong>Total Points:</strong> <span className="red-text">{profile.total_points}</span></p>
-          </div>
-
-          <div className="achievements-section">
-            <h2>ACHIEVEMENTS</h2>
-            {achievements.map((achievement, index) => (
-                <Achievement
-                    key={index}
-                    place={achievement.place}
-                    tournamentName={achievement.tournament_name}
-                    points={achievement.points}
-                />
-            ))}
-          </div>
+        <div className="achievements-section">
+          <h2>ACHIEVEMENTS</h2>
+          {achievements.map((achievement, index) => (
+            <Achievement
+              key={index}
+              place={achievement.place}
+              tournamentName={achievement.tournament_name}
+              points={achievement.points}
+            />
+          ))}
         </div>
+      </div>
 
-        <div className="predictions-section">
-          <h2>Upcoming Predictions</h2>
-          <div className="predictions-grid">
-            {sortPredictions([...upcomingPredictions, ...upcomingGames]).map(item =>
-                renderPredictionCard(item, 'game_id' in item)
-            )}
-          </div>
+      <div className="predictions-section">
+        <h2>Upcoming Predictions</h2>
+        <div className="predictions-grid">
+          {sortPredictions([...upcomingPredictions, ...upcomingGames]).map(item =>
+            renderPredictionCard(item, 'game_id' in item)
+          )}
         </div>
+      </div>
 
-        <div className="history-section">
-          <h2>Predictions History</h2>
-          <select
-              id="tournament-select"
-              className="tournament-account-select"
-              onChange={handleTournamentChange}
-              value={selectedTournament || ''}
-          >
-            {tournaments.map(tournament => (
-                <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
-            ))}
-          </select>
-          <table className="history-table">
-            <thead>
+      <div className="history-section">
+        <h2>Predictions History</h2>
+        <select
+          id="tournament-select"
+          className="tournament-account-select"
+          onChange={handleTournamentChange}
+          value={selectedTournament || ''}
+        >
+          {tournaments.map(tournament => (
+            <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
+          ))}
+        </select>
+        <table className="history-table">
+          <thead>
             <tr>
               <th>DATE & TIME</th>
               <th>GAME</th>
@@ -406,34 +388,34 @@ const Account = () => {
               <th>ACTUAL RESULT</th>
               <th>POINTS</th>
             </tr>
-            </thead>
-            <tbody>
+          </thead>
+          <tbody>
             {filteredBets.map(bet => (
-                <tr key={bet.id}>
-                  <td>{formatDateTime(bet.start_time)} MSK</td>
-                  <td>{bet.team1} vs {bet.team2}</td>
-                  <td>{bet.team1_score}–{bet.team2_score}</td>
-                  <td>{bet.actual_team1_score}–{bet.actual_team2_score}</td>
-                  <td>{bet.points}</td>
-                </tr>
+              <tr key={bet.id}>
+                <td>{formatDateTime(bet.start_time)}</td>
+                <td>{bet.team1} vs {bet.team2}</td>
+                <td>{bet.team1_score}–{bet.team2_score}</td>
+                <td>{bet.actual_team1_score}–{bet.actual_team2_score}</td>
+                <td>{bet.points}</td>
+              </tr>
             ))}
-            </tbody>
-          </table>
-        </div>
+          </tbody>
+        </table>
+      </div>
 
-        <div className="tournaments-stats-section">
-          <h2>TOURNAMENTS HISTORY</h2>
-          <div className="tournament-grid">
-            {tournamentStats.length > 0 ? (
-                tournamentStats.map((tournament, index) => (
-                    <TournamentRow key={index} {...tournament} />
-                ))
-            ) : (
-                <p>No tournament stats available</p>
-            )}
-          </div>
+      <div className="tournaments-stats-section">
+        <h2>TOURNAMENTS HISTORY</h2>
+        <div className="tournament-grid">
+          {tournamentStats.length > 0 ? (
+            tournamentStats.map((tournament, index) => (
+              <TournamentRow key={index} {...tournament} />
+            ))
+          ) : (
+            <p>No tournament stats available</p>
+          )}
         </div>
       </div>
+    </div>
   );
 };
 
