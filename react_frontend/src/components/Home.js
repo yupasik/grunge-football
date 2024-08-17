@@ -22,6 +22,7 @@ function Home() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
+        fetchTournaments();
         checkAuthentication();
         const intervalId = setInterval(checkAuthentication, TOKEN_CHECK_INTERVAL);
 
@@ -180,80 +181,82 @@ function Home() {
     const leaderId = useMemo(() => findLeader(participants), [participants]);
 
     const renderPredictionsTable = () => {
-        if (!tournamentData || !tournamentData.games) return null;
+      if (!tournamentData || !tournamentData.games) return null;
 
-        return (
-            <div className="predictions-table-container">
-                <table className="predictions-table">
-                    <thead>
-                        <tr>
-                            <th>DATE & TIME</th>
-                            <th>GAME</th>
-                            <th>SCORE</th>
-                            {sortedParticipants.map(participant => (
-                                <th
-                                    key={participant.id}
-                                    data-participant-id={participant.id}
-                                    className={participant.id === leaderId ? 'leader-column' : ''}
-                                >
-                                    {participant.username}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tournamentData.games
-                            .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
-                            .map(game => {
-                                const gameStarted = isGameStarted(game);
-                                return (
-                                    <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
-                                        <td data-label="DATE & TIME">{formatDateTime(game.start_time)} MSK</td>
-                                        <td data-label="GAME">{`${game.team1?.toUpperCase() || 'TBA'} vs ${game.team2?.toUpperCase() || 'TBA'}`}</td>
-                                        <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
-                                            {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
-                                        </td>
-                                        {sortedParticipants.map(participant => {
-                                            const bet = game.bets.find(b => b.owner_id === participant.id);
-                                            let predictionClass = 'no-bet';
-                                            if (bet) {
-                                            if (game.finished) {
-                                                if (bet.points === 1) predictionClass = 'correct-prediction';
-                                                else if (bet.points === 3) predictionClass = 'diff-prediction';
-                                                else if (bet.points === 5) predictionClass = 'exact-prediction';
-                                                else predictionClass = 'incorrect-prediction';
-                                            } else if (gameStarted) {
-                                                predictionClass = 'pending-prediction';
-                                            }
-                                        }
-                                            return (
-                                                <td
-                                                    key={participant.id}
-                                                    data-label={participant.username}
-                                                    className={`${predictionClass} ${participant.id === leaderId ? 'leader-column' : ''}`}
-                                                >
-                                                    {bet ? `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` : '-'}
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
-                                );
-                            })}
-                        <tr className="total-points">
-                            <td colSpan={3}>TOTAL POINTS</td>
-                            {sortedParticipants.map(participant => (
-                                <td
-                                    key={participant.id}
-                                    className={participant.id === leaderId ? 'leader-column' : ''}
-                                >
-                                    {calculateTotalPoints(participant.id)}
-                                </td>
-                            ))}
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
+      return (
+        <div className="predictions-table-container">
+          <table className="predictions-table">
+            <thead>
+              <tr>
+                <th>DATE & TIME</th>
+                <th>TITLE</th>
+                <th>GAME</th>
+                <th>SCORE</th>
+                {sortedParticipants.map(participant => (
+                  <th
+                    key={participant.id}
+                    data-participant-id={participant.id}
+                    className={participant.id === leaderId ? 'leader-column' : ''}
+                  >
+                    {participant.username}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tournamentData.games
+                .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+                .map(game => {
+                  const gameStarted = isGameStarted(game);
+                  return (
+                    <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
+                      <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
+                      <td data-label="TITLE">{game.title}</td>
+                      <td data-label="GAME">{`${game.team1?.toUpperCase() || 'TBA'} vs ${game.team2?.toUpperCase() || 'TBA'}`}</td>
+                      <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
+                        {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
+                      </td>
+                      {sortedParticipants.map(participant => {
+                        const bet = game.bets.find(b => b.owner_id === participant.id);
+                        let predictionClass = 'no-bet';
+                        if (bet) {
+                          if (game.finished) {
+                            if (bet.points === 1) predictionClass = 'correct-prediction';
+                            else if (bet.points === 3) predictionClass = 'diff-prediction';
+                            else if (bet.points === 5) predictionClass = 'exact-prediction';
+                            else predictionClass = 'incorrect-prediction';
+                          } else if (gameStarted) {
+                            predictionClass = 'pending-prediction';
+                          }
+                        }
+                        return (
+                          <td
+                            key={participant.id}
+                            data-label={participant.username}
+                            className={`${predictionClass} ${participant.id === leaderId ? 'leader-column' : ''}`}
+                          >
+                            {bet ? `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` : '-'}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              <tr className="total-points">
+                <td colSpan={4}>TOTAL POINTS</td>
+                {sortedParticipants.map(participant => (
+                  <td
+                    key={participant.id}
+                    className={participant.id === leaderId ? 'leader-column' : ''}
+                  >
+                    {calculateTotalPoints(participant.id)}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      );
     };
 
     return (
