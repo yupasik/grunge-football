@@ -22,7 +22,7 @@ class GameUpdate(BaseModel):
 
 
 class GameFinish(BaseModel):
-    id = int
+    id: int
 
 
 class GameRead(GameBase):
