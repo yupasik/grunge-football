@@ -314,9 +314,9 @@ const Account = () => {
           <h1>MY ACCOUNT</h1>
           <div>
             <a href="/" className="back-button">BACK TO MAIN</a>
-            if (!isAuthenticated) {
-              <a href="/signin" className="login-button">LOGIN</a>
-            }
+            {!isAuthenticated && (
+              <Link to="/signin" className="login-button">LOGIN</Link>
+            )}
             {profile.is_admin && <a href="/dashboard" className="admin-button">ADMIN</a>}
           </div>
         </div>
