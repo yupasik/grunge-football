@@ -194,7 +194,7 @@ h3 {
 }
 .predictions-table th,
 .predictions-table td {
-  padding: 8px;
+  padding: 5px;
   text-align: center;
   border: 1px solid #444;
   white-space: nowrap;
@@ -408,7 +408,6 @@ h3 {
     position: relative;
     padding-left: 50%;
     white-space: normal;
-    text-align: right;
   }
 
   .predictions-table td:before {
