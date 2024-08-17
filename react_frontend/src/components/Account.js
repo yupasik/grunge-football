@@ -255,19 +255,56 @@ const Account = () => {
 
   const renderPredictionCard = (item, isPrediction = false) => {
     const cardClass = isPrediction ? 'bet-made' : 'no-bet';
+    const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id } = item;
+    const cardId = isPrediction ? id : `game-${id}`;
+    const gameStarted = isGameStarted(start_time);
+    const isSubmitting = submittingBets[cardId];
+    const [error, setError] = useState('');
+
+    const getButtonText = () => {
+      if (isSubmitting) return 'Submitting...';
+      if (gameStarted) return 'Game Started';
+      return isPrediction ? 'Update bet' : 'Submit bet';
+    };
+
+    const validateScores = (score1, score2) => {
+      if (score1 === '' || score2 === '') {
+        setError('Please enter a score for both teams');
+        return false;
+      }
+      setError('');
+      return true;
+    };
+
+    const handleSubmit = () => {
+      const team1Score = document.getElementById(`team1-score-${cardId}`).value;
+      const team2Score = document.getElementById(`team2-score-${cardId}`).value;
+
+      if (!validateScores(team1Score, team2Score)) {
+        return;
+      }
+
+      handlePredictionSubmit(
+        isPrediction ? id : null,
+        team1Score,
+        team2Score,
+        start_time,
+        isPrediction ? game_id : id
+      );
+    };
 
     return (
-      <div key={isPrediction ? item.id : `game-${item.id}`} className={`prediction-card ${cardClass}`}>
+      <div key={cardId} className={`prediction-card ${cardClass}`}>
         <h3 className="tournament-name">
-          <span className="tournament-name">{item.tournament_name}</span>
-          <br/>
-          <br/>
-          <span className="game-date">[ {formatDateTime(item.start_time)} ]</span>
+          <span>{tournament_name}</span>
+          <br />
+          <br />
+          <span className="game-date">[ {formatDateTime(start_time)} ]</span>
         </h3>
         <div className="match-info">
-          <div className="team">{item.team1}</div>
+          <div className="team">{team1}</div>
           <span className="vs">vs</span>
-          <div className="team">{item.team2}</div>
+          <div className="team">{team2}</div>
         </div>
         <div className="prediction-input">
           <input
@@ -275,9 +312,10 @@ const Account = () => {
             min="0"
             max="99"
             placeholder="0"
-            id={`team1-score-${isPrediction ? item.id : `game-${item.id}`}`}
+            id={`team1-score-${cardId}`}
             className="score-input"
-            defaultValue={isPrediction ? item.team1_score : ''}
+            defaultValue={isPrediction ? team1_score : ''}
+            aria-label={`Score for ${team1}`}
           />
           <span className="separator">:</span>
           <input
@@ -285,24 +323,20 @@ const Account = () => {
             min="0"
             max="99"
             placeholder="0"
-            id={`team2-score-${isPrediction ? item.id : `game-${item.id}`}`}
+            id={`team2-score-${cardId}`}
             className="score-input"
-            defaultValue={isPrediction ? item.team2_score : ''}
+            defaultValue={isPrediction ? team2_score : ''}
+            aria-label={`Score for ${team2}`}
           />
         </div>
+        {error && <div className="error-message" role="alert">{error}</div>}
         <button
-          id={`submit-button-${isPrediction ? item.id : `game-${item.id}`}`}
-          className={`submit-prediction ${isGameStarted(item.start_time) ? 'game-started' : ''}`}
-          onClick={() => handlePredictionSubmit(
-            isPrediction ? item.id : null,
-            document.getElementById(`team1-score-${isPrediction ? item.id : `game-${item.id}`}`).value,
-            document.getElementById(`team2-score-${isPrediction ? item.id : `game-${item.id}`}`).value,
-            item.start_time,
-            isPrediction ? item.game_id : item.id
-          )}
-          disabled={submittingBets[isPrediction ? item.id : item.id] || isGameStarted(item.start_time)}
+          id={`submit-button-${cardId}`}
+          className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
+          onClick={handleSubmit}
+          disabled={isSubmitting || gameStarted}
         >
-          {submittingBets[isPrediction ? item.id : item.id] ? 'Submitting...' : isGameStarted(item.start_time) ? 'Game Started' : isPrediction ? 'Update bet' : 'Submit bet'}
+          {getButtonText()}
         </button>
       </div>
     );
