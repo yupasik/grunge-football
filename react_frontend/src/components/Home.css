@@ -340,7 +340,7 @@ h3 {
     align-items: flex-start;
   }
 
-  .account-button {
+  .account-button .login-button {
     margin-top: 10px;
     align-self: flex-end;
   }

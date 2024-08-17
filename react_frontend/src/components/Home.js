@@ -18,9 +18,11 @@ function Home() {
     const [isSortedByPoints, setIsSortedByPoints] = useState(false);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
         fetchTournaments();
+        checkAuthentication();
     }, []);
 
     useEffect(() => {
@@ -58,6 +60,11 @@ function Home() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const checkAuthentication = () => {
+        const token = localStorage.getItem('access_token');
+        setIsAuthenticated(!!token);
     };
 
     const getMoscowTime = () => {
@@ -223,7 +230,11 @@ function Home() {
         <div className="container">
             <div className="header-container">
                 <h1>FOOTBALL PREDICTIONS</h1>
-                <Link to="/account" className="account-button">MY ACCOUNT</Link>
+                {isAuthenticated ? (
+                    <Link to="/account" className="account-button">MY ACCOUNT</Link>
+                ) : (
+                    <Link to="/signin" className="account-button">LOGIN</Link>
+                )}
             </div>
 
             <div className="football-banner">
