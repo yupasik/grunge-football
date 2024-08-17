@@ -10,6 +10,7 @@ const API_URL = '/api';
 const SORT_BY_POINTS = 'SORT BY POINTS';
 const SORT_ALPHABETICALLY = 'SORT ALPHABETICALLY';
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
+const TOKEN_CHECK_INTERVAL = 60000; // Check every minute
 
 function Home() {
     const [tournaments, setTournaments] = useState([]);
@@ -21,9 +22,17 @@ function Home() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        fetchTournaments();
         checkAuthentication();
-    }, []);
+        const intervalId = setInterval(checkAuthentication, TOKEN_CHECK_INTERVAL);
+
+        // Listen for storage events (in case token is removed in another tab)
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+          clearInterval(intervalId);
+          window.removeEventListener('storage', handleStorageChange);
+        };
+      }, []);
 
     useEffect(() => {
         if (currentTournamentId) {
@@ -62,10 +71,31 @@ function Home() {
         }
     };
 
-    const checkAuthentication = () => {
+    const handleStorageChange = (e) => {
+        if (e.key === 'access_token') {
+          checkAuthentication();
+        }
+      };
+
+    const checkAuthentication = async () => {
         const token = localStorage.getItem('access_token');
-        setIsAuthenticated(!!token);
-    };
+        if (!token) {
+          setIsAuthenticated(false);
+          return;
+        }
+
+        try {
+          // Verify token with the backend
+          await axios.get(`${API_URL}/verify-token`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          setIsAuthenticated(false);
+          localStorage.removeItem('access_token');
+        }
+      };
 
     const getMoscowTime = () => {
       const now = new Date();
@@ -229,15 +259,17 @@ function Home() {
     return (
         <div className="container">
             <div className="header-container">
-                <h1>FOOTBALL PREDICTIONS</h1>
-                {isAuthenticated ? (
-                    <Link to="/account" className="account-button">MY ACCOUNT</Link>
-                ) : (
-                    <>
-                        <Link to="/signin" className="login-button">LOGIN</Link>
-                        <Link to="/signup" className="login-button">REGISTER</Link>
-                    </>
-                )}
+                <h1 className="header-title">FOOTBALL PREDICTIONS</h1>
+                <div className="header-buttons">
+                    {isAuthenticated ? (
+                        <Link to="/account" className="account-button">MY ACCOUNT</Link>
+                    ) : (
+                        <>
+                            <Link to="/signin" className="login-button">LOGIN</Link>
+                            <Link to="/signup" className="login-button">REGISTER</Link>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="football-banner">

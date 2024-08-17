@@ -37,8 +37,48 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 0;
-  border-bottom: 2px solid #444;
+  padding: 1rem;
+  /*background-color: rgba(26, 26, 26, 0.8); !* Полупрозрачный фон *!*/
+}
+
+.header-title {
+  font-size: 2rem;
+  color: #ff3333;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.auth-button {
+  padding: 0.5rem 1rem;
+  background-color: #ff3333;
+  color: #1a1a1a;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: bold;
+  border: 2px solid #ddd;
+  transition: all 0.3s ease;
+}
+
+.auth-button:hover {
+  background-color: #ddd;
+  color: #ff3333;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-buttons {
+    margin-top: 1rem;
+    align-self: flex-end;
+  }
 }
 
 h1 {
