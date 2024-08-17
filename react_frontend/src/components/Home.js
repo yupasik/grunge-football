@@ -10,7 +10,7 @@ const API_URL = '/api';
 const SORT_BY_POINTS = 'SORT BY POINTS';
 const SORT_ALPHABETICALLY = 'SORT ALPHABETICALLY';
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
-const TOKEN_CHECK_INTERVAL = 60000; // Check every minute
+const TOKEN_CHECK_INTERVAL = 7200000; // Check every 2 hours
 
 function Home() {
     const [tournaments, setTournaments] = useState([]);
