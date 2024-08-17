@@ -78,7 +78,7 @@ h3 {
   box-shadow: 3px 3px 0px #ddd;
 }
 
-.account-button, .login-button:hover {
+.account-button:hover, .login-button:hover {
   background-color: #ddd;
   color: #ff3333;
   box-shadow: 5px 5px 0px #ff3333;
