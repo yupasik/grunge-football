@@ -72,7 +72,7 @@ const Dashboard = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         };
         try {
-          await axios.post(`${API_URL}/games/${gameId}/finish`, config);
+          await axios.post(`${API_URL}/games/${gameId}/finish`, {}, config);
           fetchData();
         } catch (error) {
           console.error('Error finishing game:', error);
