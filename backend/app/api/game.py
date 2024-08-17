@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from ..db.database import get_db
 from ..models.game import Game
-from ..schemas.game import GameCreate, GameRead, GameUpdate
+from ..schemas.game import GameCreate, GameRead, GameUpdate, GameFinish
 from ..models.bet import Bet
 from ..schemas.bet import BetRead
 from ..models.user import User
@@ -115,12 +115,13 @@ async def delete_game(
     db.commit()
 
 
-@router.post("/games/{game_id}/finish", response_model=GameRead)
+@router.post("/games/finish", response_model=GameRead)
 async def finish_game(
-    game_id: int,
+    game: GameFinish,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    game_id = game.id
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 

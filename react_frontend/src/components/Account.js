@@ -4,7 +4,7 @@ import { format, parseISO, addHours, isBefore, compareAsc } from 'date-fns';
 import './Account.css';
 
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
-const API_URL = '/api';
+const API_URL = 'http:/localhost:8000/api';
 
 const Account = () => {
   const [profile, setProfile] = useState({});

@@ -3,7 +3,7 @@ import { format, parseISO, addHours, isBefore, compareAsc } from 'date-fns';
 import axios from 'axios';
 import './Dashboard.css';
 
-const API_URL = '/api';
+const API_URL = 'http:/localhost:8000/api';
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
 
 
@@ -51,11 +51,10 @@ const Dashboard = () => {
 
   const GamesManagement = () => {
     const [showCreateGame, setShowCreateGame] = useState(false);
-
+    const config = {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+    };
     const handleDeleteGame = async (gameId) => {
-      const config = {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-      };
       if (window.confirm('Are you sure you want to delete this game?')) {
         try {
           await axios.delete(`${API_URL}/games/${gameId}`, config);
@@ -68,11 +67,8 @@ const Dashboard = () => {
 
     const handleFinishGame = async (gameId) => {
       if (window.confirm('Are you sure you want to finish this game?')) {
-        const config = {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-        };
         try {
-          await axios.post(`${API_URL}/games/${gameId}/finish`, {}, config);
+          await axios.post(`${API_URL}/games/finish`, {id: parseInt(gameId)}, config);
           fetchData();
         } catch (error) {
           console.error('Error finishing game:', error);

@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 import {isBefore, parseISO} from "date-fns";
 
-const API_URL = '/api';
+const API_URL = 'http:/localhost:8000/api';
 const SORT_BY_POINTS = 'SORT BY POINTS';
 const SORT_ALPHABETICALLY = 'SORT ALPHABETICALLY';
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3

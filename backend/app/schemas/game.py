@@ -21,6 +21,10 @@ class GameUpdate(BaseModel):
     team2_score: int
 
 
+class GameFinish(BaseModel):
+    id = int
+
+
 class GameRead(GameBase):
     id: int
     finished: bool

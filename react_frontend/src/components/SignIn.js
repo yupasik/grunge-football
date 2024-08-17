@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './SignIn.css';
 
-const API_URL = '/api';
+const API_URL = 'http:/localhost:8000/api';
 
 const SignIn = () => {
   const [username, setUsername] = useState('');
