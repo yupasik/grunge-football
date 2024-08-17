@@ -151,7 +151,7 @@ const Account = () => {
   };
 
   const formatDateTime = (dateTimeString) => {
-    return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm');
+    return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm') + " MSK";
   };
 
   const getMoscowTime = () => {
@@ -376,7 +376,7 @@ const Account = () => {
             <tbody>
             {filteredBets.map(bet => (
                 <tr key={bet.id}>
-                  <td>{formatDateTime(bet.start_time)}</td>
+                  <td>{formatDateTime(bet.start_time)} MSK</td>
                   <td>{bet.team1} vs {bet.team2}</td>
                   <td>{bet.team1_score}–{bet.team2_score}</td>
                   <td>{bet.actual_team1_score}–{bet.actual_team2_score}</td>
