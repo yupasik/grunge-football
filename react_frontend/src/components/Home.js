@@ -179,9 +179,12 @@ function Home() {
                                 return (
                                     <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
                                         <td data-label="DATE & TIME">{formatDateTime(game.start_time)} MSK</td>
-                                        <td data-label="GAME">{`${game.team1?.toUpperCase() || 'TBA'} vs ${game.team2?.toUpperCase() || 'TBA'}`}</td>
+                                        <td data-label="GAME">
+                                            {game.team1?.toUpperCase() || 'TBA'} <span
+                                            className="vs">vs</span> {game.team2?.toUpperCase() || 'TBA'}
+                                        </td>
                                         <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
-                                            {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
+                                        {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
                                         </td>
                                         {sortedParticipants.map(participant => {
                                             const bet = game.bets.find(b => b.owner_id === participant.id);

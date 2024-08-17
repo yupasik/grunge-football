@@ -277,6 +277,12 @@ h3 {
     background-color: #555;
 }
 
+.predictions-table .vs {
+  color: #ff3333;  /* Красный цвет, соответствующий вашей цветовой схеме */
+  font-weight: bold;
+  margin: 0 5px;  /* Добавляем небольшой отступ слева и справа */
+}
+
 /*.tournament-select-container {*/
 /*    display: flex;*/
 /*    align-items: center;*/
