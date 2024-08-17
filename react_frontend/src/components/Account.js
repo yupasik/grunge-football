@@ -19,9 +19,11 @@ const Account = () => {
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [allBets, setAllBets] = useState([]);
   const [upcomingGames, setUpcomingGames] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     fetchData();
+    checkAuthentication();
   }, []);
 
   useEffect(() => {
@@ -76,6 +78,11 @@ const Account = () => {
       console.error('Error fetching data:', error);
     }
   };
+
+  const checkAuthentication = () => {
+        const token = localStorage.getItem('access_token');
+        setIsAuthenticated(!!token);
+    };
 
   const Achievement = ({ place, tournamentName, points }) => {
     const getIcon = (place) => {
@@ -307,7 +314,9 @@ const Account = () => {
           <h1>MY ACCOUNT</h1>
           <div>
             <a href="/" className="back-button">BACK TO MAIN</a>
-            <a href="/" className="back-button">LOGIN</a>
+            if (!isAuthenticated) {
+              <a href="/signin" className="login-button">LOGIN</a>
+            }
             {profile.is_admin && <a href="/dashboard" className="admin-button">ADMIN</a>}
           </div>
         </div>

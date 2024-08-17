@@ -29,7 +29,7 @@ h1, h2, h3 {
     border-bottom: 2px solid #444;
 }
 
-.back-button, .admin-button {
+.back-button, .admin-button, .login-button{
     padding: 8px 15px;
     background-color: #ff3333;
     color: #1a1a1a;
@@ -43,7 +43,7 @@ h1, h2, h3 {
     box-shadow: 3px 3px 0px #ddd;
 }
 
-.back-button:hover, .admin-button:hover {
+.back-button:hover, .admin-button, .login-button:hover {
     background-color: #ddd;
     color: #ff3333;
     box-shadow: 5px 5px 0px #ff3333;
@@ -526,7 +526,7 @@ font-size: 21px;
         align-items: flex-start;
     }
 
-    .back-button, .admin-button {
+    .back-button, .admin-button, .login-button {
         margin-top: 20px;
         font-size: 14px;
         padding: 6px 12px;
@@ -602,7 +602,7 @@ font-size: 21px;
     align-items: flex-start;
   }
 
-  .back-button, .admin-button {
+  .back-button, .admin-button, .login-button {
     margin-top: 0.5rem;
     margin-left: 0;
   }
