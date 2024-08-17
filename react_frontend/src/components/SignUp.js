@@ -25,14 +25,8 @@ const SignUp = () => {
       return;
     }
 
-    if (username.length < 3 || username.length > 30) {
-      setMessage('Username must be between 3 and 30 characters long.');
-      setMessageClass('error');
-      return;
-    }
-
-    if (username.length > 15) {
-      setMessage('Username must be less then 15 characters long.');
+    if (username.length > 8) {
+      setMessage('Username must be equal or less then 8 characters long.');
       setMessageClass('error');
       return;
     }
