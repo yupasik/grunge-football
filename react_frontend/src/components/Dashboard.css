@@ -880,3 +880,17 @@ button:hover {
     transform: translateX(1.25rem);
   }
 }
+
+@media (max-width: 768px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-actions {
+    flex-direction: column;
+  }
+
+  .game-actions button {
+    margin: 5px 0;
+  }
+}

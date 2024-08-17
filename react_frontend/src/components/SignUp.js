@@ -18,9 +18,15 @@ const SignUp = () => {
     setMessageClass('');
 
     // Username validation: only Latin letters and numbers
-    const usernamePattern = /^[a-zA-Z0-9]+$/;
+    const usernamePattern = /^[a-zA-Z0-9_@.#&+-?!]+$/;
     if (!usernamePattern.test(username)) {
-      setMessage('Username must contain only Latin letters and numbers.');
+      setMessage('Username can contain Latin letters, numbers, and special characters like @, #, &, +, -, _, ., ?, !');
+      setMessageClass('error');
+      return;
+    }
+
+    if (username.length > 8) {
+      setMessage('Username must be equal or less then 8 characters long.');
       setMessageClass('error');
       return;
     }
