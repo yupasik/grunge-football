@@ -67,6 +67,11 @@ h3 {
   animation: flicker 2s infinite;
 }
 
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+}
+
 .account-button, .login-button {
   padding: 8px 15px;
   background-color: #ff3333;

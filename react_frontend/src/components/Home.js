@@ -65,9 +65,27 @@ function Home() {
         }
     };
 
-    const checkAuthentication = () => {
+    const checkAuthentication = async () => {
         const token = localStorage.getItem('access_token');
-        setIsAuthenticated(!!token);
+        if (!token) {
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          return;
+        }
+
+        try {
+          const config = {
+            headers: { Authorization: `Bearer ${token}` }
+          };
+          await axios.get(`${API_URL}/users/me`, config);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Authentication check failed:', error);
+          setIsAuthenticated(false);
+          localStorage.removeItem('access_token');
+        } finally {
+          setIsLoading(false);
+        }
     };
 
     const getMoscowTime = () => {
@@ -247,14 +265,16 @@ function Home() {
         <div className="container">
             <div className="header-container">
                 <h1>FOOTBALL PREDICTIONS</h1>
-                {isAuthenticated ? (
-                    <Link to="/account" className="account-button">MY ACCOUNT</Link>
-                ) : (
-                    <>
-                        <Link to="/signin" className="login-button">LOGIN</Link>
-                        <Link to="/signup" className="login-button">REGISTER</Link>
-                    </>
-                )}
+                <div className="auth-buttons">
+                    {isAuthenticated ? (
+                        <Link to="/account" className="account-button">MY ACCOUNT</Link>
+                    ) : (
+                        <>
+                            <Link to="/signin" className="login-button">LOGIN</Link>
+                            <Link to="/signup" className="login-button">REGISTER</Link>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="football-banner">
