@@ -236,7 +236,7 @@ function Home() {
                               {bet ? (
                                   gameStarted || game.finished || !bet.hidden ?
                                     `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` :
-                                    '? - ?'
+                                    'X - X'
                                 ) : '-'}
                             </td>
                           );
