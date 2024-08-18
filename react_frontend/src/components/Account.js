@@ -5,7 +5,7 @@ import './Account.css';
 import { Link } from "react-router-dom";
 
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
-const API_URL = '/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const Account = () => {
   const [profile, setProfile] = useState({});
@@ -21,6 +21,7 @@ const Account = () => {
   const [upcomingGames, setUpcomingGames] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [errors, setErrors] = useState({});
+  const [hiddenBets, setHiddenBets] = useState({});
 
   useEffect(() => {
     fetchData();
@@ -145,6 +146,10 @@ const Account = () => {
     setSelectedTournament(Number(e.target.value));
   };
 
+  const handleHiddenChange = (cardId, checked) => {
+    setHiddenBets(prev => ({ ...prev, [cardId]: checked }));
+  };
+
   const formatDateTime = (dateTimeString) => {
     return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm') + " MSK";
   };
@@ -177,17 +182,15 @@ const Account = () => {
       const config = {
         headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       };
+      const data = {
+        team1_score: team1Score,
+        team2_score: team2Score,
+        hidden: hiddenBets[betId] || false
+      };
       if (betId) {
-        await axios.put(`${API_URL}/bets/${betId}`, {
-          team1_score: team1Score,
-          team2_score: team2Score
-        }, config);
+        await axios.put(`${API_URL}/bets/${betId}`, data, config);
       } else {
-        await axios.post(`${API_URL}/bets`, {
-          game_id: gameId,
-          team1_score: team1Score,
-          team2_score: team2Score
-        }, config);
+        await axios.post(`${API_URL}/bets`, { ...data, game_id: gameId }, config);
       }
 
       const button = document.getElementById(`submit-button-${betId}`);
@@ -247,7 +250,7 @@ const Account = () => {
 
   const renderPredictionCard = (item, isPrediction = false) => {
     const cardClass = isPrediction ? 'bet-made' : 'no-bet';
-    const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id } = item;
+    const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id, hidden } = item;
     const cardId = isPrediction ? id : `game-${id}`;
     const gameStarted = isGameStarted(start_time);
     const isSubmitting = submittingBets[cardId];
@@ -312,14 +315,25 @@ const Account = () => {
           />
         </div>
         {errors[cardId] && <div className="error-message" role="alert">{errors[cardId]}</div>}
-        <button
-          id={`submit-button-${cardId}`}
-          className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
-          onClick={handleSubmit}
-          disabled={isSubmitting || gameStarted}
-        >
-          {getButtonText()}
-        </button>
+        <div className="prediction-actions">
+          <div className="hidden-checkbox">
+            <input
+              type="checkbox"
+              id={`hidden-${cardId}`}
+              checked={hiddenBets[cardId] || hidden}
+              onChange={(e) => handleHiddenChange(cardId, e.target.checked)}
+            />
+            <label htmlFor={`hidden-${cardId}`}>hidden</label>
+          </div>
+          <button
+            id={`submit-button-${cardId}`}
+            className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
+            onClick={handleSubmit}
+            disabled={isSubmitting || gameStarted}
+          >
+            {getButtonText()}
+          </button>
+        </div>
       </div>
     );
   };

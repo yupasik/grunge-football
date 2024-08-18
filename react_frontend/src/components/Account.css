@@ -515,6 +515,69 @@ font-size: 21px;
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
 }
 
+.prediction-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.hidden-checkbox {
+  display: compact;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+.hidden-checkbox input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.hidden-checkbox label {
+  font-size: 0.7rem;
+  color: var(--text-color);
+}
+
+.submit-prediction {
+  flex-grow: 1;
+  margin-left: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--highlight-color);
+  color: var(--main-bg-color);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-prediction:hover:not(:disabled) {
+  background-color: var(--hover-color);
+}
+
+.submit-prediction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit-prediction.game-started {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+
+@media (max-width: 768px) {
+  .prediction-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hidden-checkbox {
+    margin-bottom: 0.5rem;
+  }
+
+  .submit-prediction {
+    margin-left: 0;
+  }
+}
+
+
 
 @media (max-width: 768px) {
     .container {

@@ -44,6 +44,7 @@ async def create_bet(
         owner_name=user_name,
         team1_score=bet.team1_score,
         team2_score=bet.team2_score,
+        hidden=bet.hidden,
         points=0,
     )
     db.add(new_bet)
@@ -79,6 +80,7 @@ async def update_bet(
 
     db_bet.team1_score = bet.team1_score
     db_bet.team2_score = bet.team2_score
+    db_bet.hidden = bet.hidden
     db.commit()
     db.refresh(db_bet)
     return db_bet

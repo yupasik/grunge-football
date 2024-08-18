@@ -11,6 +11,7 @@ class Bet(Base):
     team2_score = Column(Integer)
     points = Column(Integer, default=0)
     finished = Column(Boolean, default=False)
+    hidden = Column(Boolean, default=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner_name = Column(String)
     owner = relationship("User", back_populates="bets")

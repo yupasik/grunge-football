@@ -57,6 +57,7 @@ def signup_admin(user: UserCreate, db: Session = Depends(get_db)):
         hashed_password=hashed_pw,
         is_admin=True,
         is_active=True,
+        is_superadmin=True,
     )
     db.add(new_user)
     db.commit()
