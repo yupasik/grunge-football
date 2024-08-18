@@ -330,14 +330,14 @@ h3 {
 /* Стиль для заголовков столбцов с информацией об игре */
 .predictions-table th.game-info {
   font-weight: bold;
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: #ff3333; /* Красный цвет для выделения */
 }
 
 /* Стиль для ячейки со счетом */
 .predictions-table td.game-info.score {
   font-weight: bold;
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: #ff3333; /* Красный цвет для выделения счета */
   border-right: 2px solid #444;
 }

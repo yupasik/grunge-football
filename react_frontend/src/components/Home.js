@@ -22,6 +22,8 @@ function Home() {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showFinished, setShowFinished] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState(null);
+
 
     useEffect(() => {
         fetchTournaments();
@@ -77,8 +79,9 @@ function Home() {
           const config = {
             headers: { Authorization: `Bearer ${token}` }
           };
-          await axios.get(`${API_URL}/users/me`, config);
+          const response = await axios.get(`${API_URL}/users/me`, config);
           setIsAuthenticated(true);
+          setCurrentUserId(response.data.id);
         } catch (error) {
           console.error('Authentication check failed:', error);
           setIsAuthenticated(false);
@@ -234,7 +237,7 @@ function Home() {
                               className={`${predictionClass} ${participant.id === leaderId ? 'leader-column' : ''}`}
                             >
                               {bet ? (
-                                  gameStarted || game.finished || !bet.hidden ?
+                                  gameStarted || game.finished || !bet.hidden || participant.id === currentUserId ?
                                     `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` :
                                     'X - X'
                                 ) : '-'}
@@ -259,7 +262,7 @@ function Home() {
             </table>
           </div>
         );
-      };
+    };
 
     return (
         <div className="container">
