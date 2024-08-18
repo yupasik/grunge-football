@@ -9,6 +9,8 @@ import {isBefore, parseISO} from "date-fns";
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 const SORT_BY_POINTS = 'SORT BY POINTS';
 const SORT_ALPHABETICALLY = 'SORT ALPHABETICALLY';
+const SHOW_FINISHED = 'SHOW FINISHED';
+const HIDE_FINISHED = 'HIDE FINISHED';
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
 
 function Home() {
@@ -19,6 +21,7 @@ function Home() {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showFinished, setShowFinished] = useState(false);
 
     useEffect(() => {
         fetchTournaments();
@@ -85,7 +88,7 @@ function Home() {
 
     const formatDateTime = (dateTimeString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        return new Date(dateTimeString).toLocaleDateString('en-GB', options);
+        return new Date(dateTimeString).toLocaleDateString('en-GB', options) + " MSK";
     };
 
     const calculateTotalPoints = (userId) => {
@@ -134,6 +137,10 @@ function Home() {
         setIsSortedByPoints(!isSortedByPoints);
     };
 
+    const toggleShowFinished = () => {
+        setShowFinished(!showFinished);
+    };
+
     const debouncedHandleTournamentChange = useMemo(
         () => debounce((value) => {
             setCurrentTournamentId(parseInt(value));
@@ -152,82 +159,89 @@ function Home() {
     const renderPredictionsTable = () => {
         if (!tournamentData || !tournamentData.games) return null;
 
+        const filteredGames = showFinished
+          ? tournamentData.games
+          : tournamentData.games.filter(game => !game.finished);
+
         return (
-            <div className="predictions-table-container">
-                <table className="predictions-table">
-                    <thead>
-                        <tr>
-                            <th>DATE & TIME</th>
-                            <th>GAME</th>
-                            <th>SCORE</th>
-                            {sortedParticipants.map(participant => (
-                                <th
-                                    key={participant.id}
-                                    data-participant-id={participant.id}
-                                    className={participant.id === leaderId ? 'leader-column' : ''}
-                                >
-                                    {participant.username}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tournamentData.games
-                            .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
-                            .map(game => {
-                                const gameStarted = isGameStarted(game);
-                                return (
-                                    <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
-                                        <td data-label="DATE & TIME">{formatDateTime(game.start_time)} MSK</td>
-                                        <td data-label="GAME">
-                                            {game.team1?.toUpperCase() || 'TBA'} <span
-                                            className="vs">vs</span> {game.team2?.toUpperCase() || 'TBA'}
-                                        </td>
-                                        <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
-                                        {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
-                                        </td>
-                                        {sortedParticipants.map(participant => {
-                                            const bet = game.bets.find(b => b.owner_id === participant.id);
-                                            let predictionClass = 'no-bet';
-                                            if (bet) {
-                                            if (game.finished) {
-                                                if (bet.points === 1) predictionClass = 'correct-prediction';
-                                                else if (bet.points === 3) predictionClass = 'diff-prediction';
-                                                else if (bet.points === 5) predictionClass = 'exact-prediction';
-                                                else predictionClass = 'incorrect-prediction';
-                                            } else if (gameStarted) {
-                                                predictionClass = 'pending-prediction';
-                                            }
-                                        }
-                                            return (
-                                                <td
-                                                    key={participant.id}
-                                                    data-label={participant.username}
-                                                    className={`${predictionClass} ${participant.id === leaderId ? 'leader-column' : ''}`}
-                                                >
-                                                    {bet ? `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` : '-'}
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
-                                );
-                            })}
-                        <tr className="total-points">
-                            <td colSpan={3}>TOTAL POINTS</td>
-                            {sortedParticipants.map(participant => (
-                                <td
-                                    key={participant.id}
-                                    className={participant.id === leaderId ? 'leader-column' : ''}
-                                >
-                                    {calculateTotalPoints(participant.id)}
-                                </td>
-                            ))}
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+          <div className="predictions-table-container">
+            <table className="predictions-table">
+              <thead>
+                <tr>
+                    <th className="game-info">DATE & TIME</th>
+                    <th className="game-info">GAME</th>
+                    <th className="game-info">SCORE</th>
+                    {sortedParticipants.map(participant => (
+                    <th
+                      key={participant.id}
+                      data-participant-id={participant.id}
+                      className={participant.id === leaderId ? 'leader-column' : ''}
+                    >
+                      {participant.username}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredGames
+                  .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+                  .map(game => {
+                    const gameStarted = isGameStarted(game);
+                    return (
+                      <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
+                        <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
+                        <td data-label="GAME">
+                          {game.team1?.toUpperCase() || 'TBA'} <span className="vs">vs</span> {game.team2?.toUpperCase() || 'TBA'}
+                        </td>
+                        <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
+                          {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
+                        </td>
+                        {sortedParticipants.map(participant => {
+                          const bet = game.bets.find(b => b.owner_id === participant.id);
+                          let predictionClass = 'no-bet';
+                          if (bet) {
+                            if (game.finished) {
+                              if (bet.points === 1) predictionClass = 'correct-prediction';
+                              else if (bet.points === 3) predictionClass = 'diff-prediction';
+                              else if (bet.points === 5) predictionClass = 'exact-prediction';
+                              else predictionClass = 'incorrect-prediction';
+                            } else if (gameStarted) {
+                              predictionClass = 'pending-prediction';
+                            }
+                          }
+                          return (
+                            <td
+                              key={participant.id}
+                              data-label={participant.username}
+                              className={`${predictionClass} ${participant.id === leaderId ? 'leader-column' : ''}`}
+                            >
+                              {bet ? (
+                                  gameStarted || game.finished || !bet.hidden ?
+                                    `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` :
+                                    '? - ?'
+                                ) : '-'}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                <tr className="total-points">
+                    <td colSpan={3} className="game-info">TOTAL POINTS</td>
+                    {sortedParticipants.map(participant => (
+                        <td
+                          key={participant.id}
+                          className={participant.id === leaderId ? 'leader-column' : ''}
+                        >
+                      {calculateTotalPoints(participant.id)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
         );
-    };
+      };
 
     return (
         <div className="container">
@@ -266,7 +280,7 @@ function Home() {
                         <circle cx="50" cy="180" r="10" fill="#ff3333"/>
                         <circle cx="1150" cy="180" r="10" fill="#ff3333"/>
                     </g>
-                    <text x="600" y="100" fontFamily="Special Elite, cursive" fontSize="48" fill="#ff3333" textAnchor="middle" dominantBaseline="middle">PREDICT & WIN</text>
+                    <text x="600" y="100" className="predict-win-text">PREDICT & WIN</text>
                 </svg>
             </div>
 
@@ -291,14 +305,29 @@ function Home() {
                         ))}
                     </select>
                 </div>
-                <button className="sort-button" onClick={toggleSort} aria-label="Toggle sort order">
-                    {isSortedByPoints ? SORT_ALPHABETICALLY : SORT_BY_POINTS}
-                </button>
+                <div className="button-container">
+                    <button className="sort-button" onClick={toggleSort}>
+                        {isSortedByPoints ? SORT_ALPHABETICALLY : SORT_BY_POINTS}
+                    </button>
+                    <button className="sort-button" onClick={toggleShowFinished}>
+                        {showFinished ? HIDE_FINISHED : SHOW_FINISHED}
+                    </button>
+                </div>
             </div>
 
             {isLoading && <p>Loading...</p>}
             {error && <p className="error">{error}</p>}
             {!isLoading && !error && renderPredictionsTable()}
+            <div className="rules-container">
+                <h2>Predictions rules</h2>
+                <ul>
+                    <li><strong>1 point</strong>  - Correct game outcome</li>
+                    <li><strong>3 points</strong> - Correct game outcome & goal difference</li>
+                    <li><strong>5 points</strong> - Exact score prediction</li>
+                    <br/>
+                    <li><strong>GOOD LUCK 🤘</strong></li>
+                </ul>
+            </div>
         </div>
     );
 }
