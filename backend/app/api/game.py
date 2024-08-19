@@ -58,6 +58,13 @@ async def get_games(
     for game, tournament_name in games:
         game_data = GameRead.from_orm(game)
         game_data.tournament_name = tournament_name
+
+        # Присваиваем start_time каждой ставке в игре
+        for bet in game.bets:
+            bet_data = BetRead.from_orm(bet)
+            bet_data.start_time = game.start_time  # Добавляем start_time для каждой ставки
+            game_data.bets.append(bet_data)
+
         result.append(game_data)
 
     return result

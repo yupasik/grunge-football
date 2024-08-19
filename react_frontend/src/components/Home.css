@@ -436,6 +436,12 @@ h3 {
     align-items: flex-start;
   }
 
+  .button-container {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+  }
+
   .account-button, .login-button {
     margin-top: 20px;
     align-self: flex-end;

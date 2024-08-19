@@ -151,6 +151,7 @@ const Account = () => {
   };
 
   const formatDateTime = (dateTimeString) => {
+    console.log(dateTimeString);
     return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm') + " MSK";
   };
 
@@ -172,11 +173,13 @@ const Account = () => {
     return predictions.sort((a, b) => compareAsc(parseISO(a.start_time), parseISO(b.start_time)));
   };
 
-  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId) => {
+  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId, hidden) => {
     if (isGameStarted(startTime)) {
       console.log("Game has already started. Cannot submit prediction.");
       return;
     }
+
+    const submissionId = betId || gameId;
     setSubmittingBets(prev => ({ ...prev, [gameId]: true }));
     try {
       const config = {
@@ -185,21 +188,47 @@ const Account = () => {
       const data = {
         team1_score: team1Score,
         team2_score: team2Score,
-        hidden: hiddenBets[betId] || false
+        hidden: hidden
       };
+
+      let response;
+
       if (betId) {
-        await axios.put(`${API_URL}/bets/${betId}`, data, config);
+        response = await axios.put(`${API_URL}/bets/${betId}`, data, config);
       } else {
-        await axios.post(`${API_URL}/bets`, { ...data, game_id: gameId }, config);
+        response = await  axios.post(`${API_URL}/bets`, { ...data, game_id: gameId }, config);
       }
 
-      const button = document.getElementById(`submit-button-${betId}`);
+      console.log(betId);
+      console.log(gameId);
+      console.log(submissionId);
+
+      console.log("Bet submitted successfully", response.data);
+
+      if (!betId) {
+        // Это новая ставка
+        setUpcomingPredictions(prev => [...prev, response.data]);
+        setUpcomingGames(prev => prev.filter(game => game.id !== gameId));
+      } else {
+        // Это обновление существующей ставки
+        setUpcomingPredictions(prev => prev.map(bet =>
+          bet.id === betId ? response.data : bet
+        ));
+      }
+
+      const button = document.getElementById(`submit-button-${submissionId}`);
       button.classList.add('submitted');
       setTimeout(() => {
         button.classList.remove('submitted');
       }, 500);
-
-      fetchData();
+      // Обновляем данные
+      // await fetchData();
+      //
+      // // Если это была новая ставка, можно обновить локальное состояние
+      // if (!betId) {
+      //   setUpcomingPredictions(prev => [...prev, response.data]);
+      //   setUpcomingGames(prev => prev.filter(game => game.id !== gameId));
+      // }
     } catch (error) {
       console.error('Error submitting prediction:', error);
     } finally {
@@ -251,9 +280,10 @@ const Account = () => {
   const renderPredictionCard = (item, isPrediction = false) => {
     const cardClass = isPrediction ? 'bet-made' : 'no-bet';
     const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id, hidden } = item;
-    const cardId = isPrediction ? id : `game-${id}`;
     const gameStarted = isGameStarted(start_time);
+    const cardId = isPrediction ? id : `game-${id}`;
     const isSubmitting = submittingBets[cardId];
+    const submissionId = isPrediction ? id : id;
 
     const getButtonText = () => {
       if (isSubmitting) return 'Submitting...';
@@ -269,12 +299,15 @@ const Account = () => {
         return;
       }
 
+      const isHidden = document.getElementById(`hidden-${cardId}`).checked;
+
       handlePredictionSubmit(
         isPrediction ? id : null,
         team1Score,
         team2Score,
         start_time,
-        isPrediction ? game_id : id
+        isPrediction ? game_id : id,
+        isHidden
       );
     };
 
@@ -318,32 +351,39 @@ const Account = () => {
         <div className="prediction-actions">
           <div className="hidden-checkbox">
             <input
-              type="checkbox"
-              id={`hidden-${cardId}`}
-              checked={hiddenBets[cardId] || hidden}
-              onChange={(e) => handleHiddenChange(cardId, e.target.checked)}
+                type="checkbox"
+                id={`hidden-${cardId}`}
+                defaultChecked={hidden}
+                onChange={(e) => handleHiddenChange(cardId, e.target.checked)}
             />
             <label htmlFor={`hidden-${cardId}`}>hidden</label>
           </div>
           <button
-            id={`submit-button-${cardId}`}
-            className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
-            onClick={handleSubmit}
-            disabled={isSubmitting || gameStarted}
+              id={`submit-button-${submissionId}`}
+              className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
+              onClick={handleSubmit}
+              disabled={isSubmitting || gameStarted}
           >
-            {getButtonText()}
+              {getButtonText()}
           </button>
+
+          {errors[submissionId] && (
+            <div className={`message ${errors[submissionId].includes('successfully') ? 'success' : 'error'}`} role="alert">
+              {errors[submissionId]}
+            </div>
+          )}
+
         </div>
       </div>
     );
   };
 
   return (
-    <div className="container">
-      <div className="header-container">
-        <h1>MY ACCOUNT</h1>
-        <div>
-          <a href="/" className="back-button">BACK TO MAIN</a>
+      <div className="container">
+        <div className="header-container">
+          <h1>MY ACCOUNT</h1>
+          <div>
+            <a href="/" className="back-button">BACK TO MAIN</a>
           {!isAuthenticated && (
             <Link to="/signin" className="login-button">LOGIN</Link>
           )}

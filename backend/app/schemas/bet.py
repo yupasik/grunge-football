@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 from typing import Optional
 
@@ -29,10 +31,11 @@ class BetRead(BetBase):
     team2: Optional[str] = ""
     tournament_name: Optional[str] = ""
     tournament_id: Optional[int] = None
-    start_time: Optional[str] = ""
+    start_time: Optional[datetime] = ""
     logo: Optional[str] = ""
     actual_team1_score: Optional[int] = None
     actual_team2_score: Optional[int] = None
 
     class Config:
         from_attributes = True
+        orm_mode = True
