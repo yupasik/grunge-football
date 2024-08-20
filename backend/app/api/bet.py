@@ -50,7 +50,13 @@ async def create_bet(
     db.add(new_bet)
     db.commit()
     db.refresh(new_bet)
-    return new_bet
+    bet_response = BetRead.from_orm(new_bet)
+    bet_response.start_time = db_game.start_time
+    bet_response.team1 = db_game.team1
+    bet_response.team2 = db_game.team2
+    bet_response.tournament_name = db_game.tournament.name
+
+    return bet_response
 
 
 @router.put("/bets/{bet_id}", response_model=BetRead)
@@ -83,7 +89,13 @@ async def update_bet(
     db_bet.hidden = bet.hidden
     db.commit()
     db.refresh(db_bet)
-    return db_bet
+    bet_response = BetRead.from_orm(db_bet)
+    bet_response.start_time = db_game.start_time
+    bet_response.team1 = db_game.team1
+    bet_response.team2 = db_game.team2
+    bet_response.tournament_name = db_game.tournament.name
+
+    return bet_response
 
 @router.get("/bets", response_model=list[BetRead])
 async def get_bets(

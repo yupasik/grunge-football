@@ -568,12 +568,42 @@ font-size: 21px;
     align-items: stretch;
   }
 
+  .submit-prediction {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .prediction-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .hidden-checkbox {
-    margin-bottom: 0.5rem;
+    display: compact;
+    align-items: center;
+    margin-right: 10px;
+  }
+
+  .hidden-checkbox input[type="checkbox"] {
+    margin-right: 5px;
+  }
+
+  .hidden-checkbox label {
+    font-size: 0.8rem;
+    white-space: nowrap;
   }
 
   .submit-prediction {
+    flex-grow: 1;
     margin-left: 0;
+    height: 40px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -625,11 +655,6 @@ font-size: 21px;
         width: 30px;
         padding: 8px;
         font-size: 16px;
-    }
-
-    .submit-prediction {
-        padding: 8px 16px;
-        font-size: 14px;
     }
 }
 

@@ -131,6 +131,11 @@ h3 {
   flex-shrink: 0;
 }
 
+.current-user-column {
+  background-color: rgba(255, 51, 51, 0.02); /* Легкий желтый фон */
+  font-weight: bold;
+}
+
 .tournament-logo {
   width: 100%; /* Adjust to fit inside the square */
   height: 100%; /* Adjust to fit inside the square */
@@ -433,6 +438,12 @@ h3 {
 
   .header-container {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .button-container {
+    display: flex;
+    width: 100%;
     align-items: flex-start;
   }
 
