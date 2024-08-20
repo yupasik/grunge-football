@@ -196,7 +196,7 @@ function Home() {
                     <th
                       key={participant.id}
                       data-participant-id={participant.id}
-                      className={participant.id === leaderId ? 'leader-column' : ''}
+                      className={participant.id === currentUserId ? 'current-user-column' : ''}
                     >
                       {participant.username}
                     </th>
@@ -234,7 +234,8 @@ function Home() {
                             <td
                               key={participant.id}
                               data-label={participant.username}
-                              className={`${predictionClass} ${participant.id === leaderId ? 'leader-column' : ''}`}
+                              className={`${predictionClass} ${participant.id === currentUserId ? 'current-user-column' : ''}`}
+                              title={bet && bet.hidden && participant.id === currentUserId ? "Hidden bet" : ""}
                             >
                               {bet ? (
                                   gameStarted || game.finished || !bet.hidden || participant.id === currentUserId ?
@@ -252,7 +253,7 @@ function Home() {
                     {sortedParticipants.map(participant => (
                         <td
                           key={participant.id}
-                          className={participant.id === leaderId ? 'leader-column' : ''}
+                          className={participant.id === currentUserId ? 'current-user-column' : ''}
                         >
                       {calculateTotalPoints(participant.id)}
                     </td>
