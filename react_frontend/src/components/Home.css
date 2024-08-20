@@ -132,7 +132,7 @@ h3 {
 }
 
 .current-user-column {
-  background-color: rgba(255, 51, 51, 0.02); /* Легкий желтый фон */
+  background-color: rgb(255, 255, 51, 0.04); /* Легкий желтый фон */
   font-weight: bold;
 }
 
