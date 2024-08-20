@@ -536,3 +536,26 @@ h3 {
     padding-left: 10px;
   }
 }
+
+@media (max-width: 768px) {
+  .total-points td {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px;
+  }
+
+  .total-points .game-info {
+    font-weight: bold;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .participant-name {
+    text-align: left;
+  }
+
+  .participant-points {
+    text-align: right;
+    color: #ff3333;
+  }
+}
