@@ -17,6 +17,7 @@ const Account = () => {
   const [tournaments, setTournaments] = useState([]);
   const [finishedBets, setFinishedBets] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState(null);
+  const [selectedUpcomingTournament, setSelectedUpcomingTournament] = useState(null);
   const [allBets, setAllBets] = useState([]);
   const [upcomingGames, setUpcomingGames] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -33,6 +34,12 @@ const Account = () => {
       filterBets();
     }
   }, [selectedTournament, finishedBets]);
+
+  useEffect(() => {
+    if (tournaments.length > 0 && selectedUpcomingTournament === null) {
+      setSelectedUpcomingTournament(null);  // Изначально выбираем "All Tournaments"
+    }
+  }, [tournaments]);
 
   const fetchData = async () => {
     try {
@@ -65,10 +72,7 @@ const Account = () => {
 
       const gamesResponse = await axios.get(`${API_URL}/games?finished=false`, config);
       const allUpcomingGames = gamesResponse.data;
-      const gamesWithoutBets = allUpcomingGames.filter(game =>
-        !upcomingBets.some(bet => bet.game_id === game.id)
-      );
-      setUpcomingGames(gamesWithoutBets);
+      setUpcomingGames(allUpcomingGames);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -142,8 +146,45 @@ const Account = () => {
     setFilteredBets(filtered);
   };
 
+  const filterUpcomingPredictions = () => {
+    if (!selectedUpcomingTournament) {
+      // Для "All Tournaments" создаем уникальный список игр
+      const allGames = [...upcomingGames];
+      upcomingPredictions.forEach(bet => {
+        const gameIndex = allGames.findIndex(game => game.id === bet.game_id);
+        if (gameIndex !== -1) {
+          allGames[gameIndex] = { ...allGames[gameIndex], bet };
+        } else {
+          allGames.push({ ...bet, id: bet.game_id });
+        }
+      });
+      return allGames;
+    }
+
+    const filteredPredictions = upcomingPredictions.filter(bet => bet.tournament_id === selectedUpcomingTournament);
+    const filteredGames = upcomingGames.filter(game => game.tournament_id === selectedUpcomingTournament);
+
+    const allGames = [...filteredGames];
+
+    filteredPredictions.forEach(bet => {
+      const gameIndex = allGames.findIndex(game => game.id === bet.game_id);
+      if (gameIndex !== -1) {
+        allGames[gameIndex] = { ...allGames[gameIndex], bet };
+      } else {
+        allGames.push({ ...bet, id: bet.game_id });
+      }
+    });
+
+    return allGames;
+  };
+
   const handleTournamentChange = (e) => {
     setSelectedTournament(Number(e.target.value));
+  };
+
+  const handleUpcomingTournamentChange = (e) => {
+    const value = e.target.value;
+    setSelectedUpcomingTournament(value === "" ? null : Number(value));
   };
 
   const handleHiddenChange = (cardId, checked) => {
@@ -151,7 +192,6 @@ const Account = () => {
   };
 
   const formatDateTime = (dateTimeString) => {
-    console.log(dateTimeString);
     return format(parseISO(dateTimeString), 'dd MMM yyyy HH:mm') + " MSK";
   };
 
@@ -173,7 +213,7 @@ const Account = () => {
     return predictions.sort((a, b) => compareAsc(parseISO(a.start_time), parseISO(b.start_time)));
   };
 
-  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId, hidden) => {
+  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId, hidden = true, tournamentId) => {
     if (isGameStarted(startTime)) {
       console.log("Game has already started. Cannot submit prediction.");
       return;
@@ -196,43 +236,43 @@ const Account = () => {
       if (betId) {
         response = await axios.put(`${API_URL}/bets/${betId}`, data, config);
       } else {
-        response = await  axios.post(`${API_URL}/bets`, { ...data, game_id: gameId }, config);
+        response = await axios.post(`${API_URL}/bets`, { ...data, game_id: gameId }, config);
       }
-
-      console.log(betId);
-      console.log(gameId);
-      console.log(submissionId);
 
       console.log("Bet submitted successfully", response.data);
 
-      if (!betId) {
-        // Это новая ставка
-        setUpcomingPredictions(prev => [...prev, response.data]);
-        setUpcomingGames(prev => prev.filter(game => game.id !== gameId));
-      } else {
-        // Это обновление существующей ставки
-        setUpcomingPredictions(prev => prev.map(bet =>
-          bet.id === betId ? response.data : bet
-        ));
-      }
+      const newBet = {
+        ...response.data,
+        tournament_id: tournamentId
+      };
+
+      setUpcomingPredictions(prev => {
+        const existingBetIndex = prev.findIndex(b => b.id === betId);
+        if (existingBetIndex !== -1) {
+          return prev.map((bet, index) => index === existingBetIndex ? newBet : bet);
+        } else {
+          return [...prev, newBet];
+        }
+      });
+
+      setAllBets(prev => {
+        const existingBetIndex = prev.findIndex(b => b.id === betId);
+        if (existingBetIndex !== -1) {
+          return prev.map((bet, index) => index === existingBetIndex ? newBet : bet);
+        } else {
+          return [...prev, newBet];
+        }
+      });
 
       const button = document.getElementById(`submit-button-${submissionId}`);
       button.classList.add('submitted');
       setTimeout(() => {
         button.classList.remove('submitted');
       }, 500);
-      // Обновляем данные
-      // await fetchData();
-      //
-      // // Если это была новая ставка, можно обновить локальное состояние
-      // if (!betId) {
-      //   setUpcomingPredictions(prev => [...prev, response.data]);
-      //   setUpcomingGames(prev => prev.filter(game => game.id !== gameId));
-      // }
     } catch (error) {
       console.error('Error submitting prediction:', error);
     } finally {
-      setSubmittingBets(prev => ({ ...prev, [betId]: false }));
+      setSubmittingBets(prev => ({ ...prev, [gameId]: false }));
     }
   };
 
@@ -277,9 +317,10 @@ const Account = () => {
     return true;
   };
 
-  const renderPredictionCard = (item, isPrediction = false) => {
+  const renderPredictionCard = (item) => {
+    const isPrediction = 'bet' in item;
     const cardClass = isPrediction ? 'bet-made' : 'no-bet';
-    const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id, hidden } = item;
+    const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id, hidden } = isPrediction ? item.bet : item;
     const gameStarted = isGameStarted(start_time);
     const cardId = isPrediction ? id : `game-${id}`;
     const isSubmitting = submittingBets[cardId];
@@ -307,7 +348,8 @@ const Account = () => {
         team2Score,
         start_time,
         isPrediction ? game_id : id,
-        isHidden
+        isHidden,
+        item.tournament_id
       );
     };
 
@@ -353,7 +395,7 @@ const Account = () => {
             <input
                 type="checkbox"
                 id={`hidden-${cardId}`}
-                defaultChecked={hidden}
+                defaultChecked={isPrediction ? hidden : true}
                 onChange={(e) => handleHiddenChange(cardId, e.target.checked)}
             />
             <label htmlFor={`hidden-${cardId}`}>hidden</label>
@@ -372,18 +414,17 @@ const Account = () => {
               {errors[submissionId]}
             </div>
           )}
-
         </div>
       </div>
     );
   };
 
   return (
-      <div className="container">
-        <div className="header-container">
-          <h1>MY ACCOUNT</h1>
-          <div>
-            <a href="/" className="back-button">BACK TO MAIN</a>
+    <div className="container">
+      <div className="header-container">
+        <h1>MY ACCOUNT</h1>
+        <div>
+          <a href="/" className="back-button">BACK TO MAIN</a>
           {!isAuthenticated && (
             <Link to="/signin" className="login-button">LOGIN</Link>
           )}
@@ -414,9 +455,20 @@ const Account = () => {
 
       <div className="predictions-section">
         <h2>Upcoming Predictions</h2>
+        <select
+            id="upcoming-tournament-select"
+            className="tournament-account-select"
+            onChange={handleUpcomingTournamentChange}
+            value={selectedUpcomingTournament === null ? "" : selectedUpcomingTournament}
+        >
+          <option value="">All Tournaments</option>
+          {tournaments.map(tournament => (
+              <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
+          ))}
+        </select>
         <div className="predictions-grid">
-          {sortPredictions([...upcomingPredictions, ...upcomingGames]).map(item =>
-            renderPredictionCard(item, 'game_id' in item)
+          {sortPredictions(filterUpcomingPredictions()).map(item =>
+              renderPredictionCard(item)
           )}
         </div>
       </div>
@@ -424,9 +476,9 @@ const Account = () => {
       <div className="history-section">
         <h2>Predictions History</h2>
         <select
-          id="tournament-select"
-          className="tournament-account-select"
-          onChange={handleTournamentChange}
+            id="tournament-select"
+            className="tournament-account-select"
+            onChange={handleTournamentChange}
           value={selectedTournament || ''}
         >
           {tournaments.map(tournament => (
