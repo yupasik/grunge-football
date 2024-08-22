@@ -213,7 +213,7 @@ const Account = () => {
     return predictions.sort((a, b) => compareAsc(parseISO(a.start_time), parseISO(b.start_time)));
   };
 
-  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId, hidden, tournamentId) => {
+  const handlePredictionSubmit = async (betId, team1Score, team2Score, startTime, gameId, hidden = true, tournamentId) => {
     if (isGameStarted(startTime)) {
       console.log("Game has already started. Cannot submit prediction.");
       return;
@@ -395,7 +395,7 @@ const Account = () => {
             <input
                 type="checkbox"
                 id={`hidden-${cardId}`}
-                defaultChecked={hidden}
+                defaultChecked={isPrediction ? hidden : true}
                 onChange={(e) => handleHiddenChange(cardId, e.target.checked)}
             />
             <label htmlFor={`hidden-${cardId}`}>hidden</label>
