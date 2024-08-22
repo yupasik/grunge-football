@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api import user, game, tournament, bet
+from .api import user, game, tournament, bet, admin
 from .db.database import engine, Base
 
 
@@ -30,3 +30,4 @@ app.include_router(user.router, prefix="/api", tags=["users"])
 app.include_router(game.router, prefix="/api", tags=["games"])
 app.include_router(tournament.router, prefix="/api", tags=["tournaments"])
 app.include_router(bet.router, prefix="/api", tags=["bets"])
+app.include_router(admin.router, prefix="/api", tags=["admin"])
