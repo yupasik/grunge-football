@@ -5,7 +5,7 @@ from ..models.user import User
 from ..models.game import Game
 from ..models.admin import NotificationLog
 from ..models.tournament import Tournament
-from ..mail.send import send_notifications
+from ..notifications.send import send_notifications
 
 
 router = APIRouter()
