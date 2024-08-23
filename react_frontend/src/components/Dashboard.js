@@ -232,17 +232,30 @@ const Dashboard = () => {
       const config = {
         headers: {Authorization: `Bearer ${localStorage.getItem('access_token')}`}
       };
-      console.log(isAdmin);
       try {
-          await axios.put(`${API_URL}/users/${userId}`, { is_admin: isAdmin }, config);
-          fetchData();
-        } catch (error) {
-          console.error('Error updating user:', error);
-        }
+        await axios.put(`${API_URL}/users/${userId}`, { is_admin: isAdmin }, config);
+        fetchData();
+      } catch (error) {
+        console.error('Error updating user:', error);
+      }
+    };
+
+    const notifyUsers = async () => {
+      const config = {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       };
+      try {
+        const response = await axios.post(`${API_URL}/notify`, {}, config);
+        alert(response.data.detail);
+      } catch (error) {
+        console.error('Error notifying users:', error);
+        alert('Failed to send notifications. Please try again.');
+      }
+    };
 
     return (
       <div className="users-management">
+        <button className="create-button" onClick={notifyUsers}>Notify Users</button>
         <table className="users-table">
           <thead>
             <tr>
@@ -259,24 +272,24 @@ const Dashboard = () => {
                 <td>{user.email}</td>
                 <td>
                   <label className="switch">
-                      <input
-                          type="checkbox"
-                          checked={user.is_active}
-                          onChange={() => handleToggleActive(user.id, !user.is_active)}
-                      />
-                      <span className="slider round"></span>
+                    <input
+                      type="checkbox"
+                      checked={user.is_active}
+                      onChange={() => handleToggleActive(user.id, !user.is_active)}
+                    />
+                    <span className="slider round"></span>
                   </label>
                 </td>
-                  <td>
+                <td>
                   <label className="switch">
-                      <input
-                          type="checkbox"
-                          checked={user.is_admin}
-                          onChange={() => handleToggleAdmin(user.id, !user.is_admin)}
-                      />
-                      <span className="slider round"></span>
+                    <input
+                      type="checkbox"
+                      checked={user.is_admin}
+                      onChange={() => handleToggleAdmin(user.id, !user.is_admin)}
+                    />
+                    <span className="slider round"></span>
                   </label>
-                  </td>
+                </td>
               </tr>
             ))}
           </tbody>
