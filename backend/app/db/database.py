@@ -13,6 +13,8 @@ DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("POSTGRES_DB")
 IS_TEST = os.getenv("IS_TEST", False)
 
+print(DB_PASSWORD)
+
 if IS_TEST:
     SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 else:

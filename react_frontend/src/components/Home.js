@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
-import {isBefore, parseISO} from "date-fns";
+import { isBefore, parseISO } from "date-fns";
 
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 const SORT_BY_POINTS = 'SORT BY POINTS';
@@ -24,7 +24,6 @@ function Home() {
     const [showFinished, setShowFinished] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
 
-
     useEffect(() => {
         fetchTournaments();
         checkAuthentication();
@@ -41,9 +40,10 @@ function Home() {
         setError(null);
         try {
             const response = await axios.get(`${API_URL}/tournaments`);
-            setTournaments(response.data);
-            if (response.data.length > 0) {
-                setCurrentTournamentId(response.data[0].id);
+            const sortedTournaments = response.data.sort((a, b) => b.id - a.id);
+            setTournaments(sortedTournaments);
+            if (sortedTournaments.length > 0) {
+                setCurrentTournamentId(sortedTournaments[0].id);
             }
         } catch (error) {
             console.error('Error fetching tournaments:', error);
@@ -70,42 +70,40 @@ function Home() {
     const checkAuthentication = async () => {
         const token = localStorage.getItem('access_token');
         if (!token) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            return;
         }
 
         try {
-          const config = {
-            headers: { Authorization: `Bearer ${token}` }
-          };
-          const response = await axios.get(`${API_URL}/users/me`, config);
-          setIsAuthenticated(true);
-          setCurrentUserId(response.data.id);
+            const config = {
+                headers: { Authorization: `Bearer ${token}` }
+            };
+            const response = await axios.get(`${API_URL}/users/me`, config);
+            setIsAuthenticated(true);
+            setCurrentUserId(response.data.id);
         } catch (error) {
-          console.error('Authentication check failed:', error);
-          setIsAuthenticated(false);
-          localStorage.removeItem('access_token');
+            console.error('Authentication check failed:', error);
+            setIsAuthenticated(false);
+            localStorage.removeItem('access_token');
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
     const getMoscowTime = () => {
-      const now = new Date();
-      const currentTimeMs = now.getTime();
-      const localOffset = now.getTimezoneOffset();
-      const utcTimeMs = currentTimeMs + localOffset * 60 * 1000;
-      const moscowTimeMs = utcTimeMs + MOSCOW_TIMEZONE_OFFSET * 60 * 60 * 1000;
-      const moscow = new Date(moscowTimeMs);
-      return moscow;
+        const now = new Date();
+        const currentTimeMs = now.getTime();
+        const localOffset = now.getTimezoneOffset();
+        const utcTimeMs = currentTimeMs + localOffset * 60 * 1000;
+        const moscowTimeMs = utcTimeMs + MOSCOW_TIMEZONE_OFFSET * 60 * 60 * 1000;
+        return new Date(moscowTimeMs);
     };
 
     const isGameStarted = (game) => {
-      const moscowTime = getMoscowTime();
-      return isBefore(parseISO(game.start_time), moscowTime) && !game.finished;
+        const moscowTime = getMoscowTime();
+        return isBefore(parseISO(game.start_time), moscowTime) && !game.finished;
     };
-
 
     const formatDateTime = (dateTimeString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -141,19 +139,6 @@ function Home() {
         return [...participants].sort((a, b) => a.username.localeCompare(b.username));
     };
 
-    const findLeader = (participants) => {
-        let maxPoints = -1;
-        let leaderId = null;
-        participants.forEach(participant => {
-            const points = calculateTotalPoints(participant.id);
-            if (points > maxPoints) {
-                maxPoints = points;
-                leaderId = participant.id;
-            }
-        });
-        return leaderId;
-    };
-
     const toggleSort = () => {
         setIsSortedByPoints(!isSortedByPoints);
     };
@@ -175,93 +160,97 @@ function Home() {
         isSortedByPoints ? sortParticipantsByTotalPoints(participants) : sortParticipantsAlphabetically(participants),
         [participants, isSortedByPoints]
     );
-    const leaderId = useMemo(() => findLeader(participants), [participants]);
+    // const sortedTournaments = useMemo(() =>
+    //     [...tournaments].sort((a, b) => b.id - a.id),
+    //     [tournaments]
+    // );
 
     const renderPredictionsTable = () => {
         if (!tournamentData || !tournamentData.games) return null;
 
         const filteredGames = showFinished
-          ? tournamentData.games
-          : tournamentData.games.filter(game => !game.finished);
+            ? tournamentData.games
+            : tournamentData.games.filter(game => !game.finished);
 
         return (
-          <div className="predictions-table-container">
-            <table className="predictions-table">
-              <thead>
-                <tr>
-                    <th className="game-info">DATE & TIME</th>
-                    <th className="game-info">GAME</th>
-                    <th className="game-info">SCORE</th>
-                    {sortedParticipants.map(participant => (
-                    <th
-                      key={participant.id}
-                      data-participant-id={participant.id}
-                      className={participant.id === currentUserId ? 'current-user-column' : ''}
-                    >
-                      {participant.username}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredGames
-                  .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
-                  .map(game => {
-                    const gameStarted = isGameStarted(game);
-                    return (
-                      <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
-                        <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
-                        <td data-label="GAME">
-                          {game.team1?.toUpperCase() || 'TBA'} <span className="vs">vs</span> {game.team2?.toUpperCase() || 'TBA'}
-                        </td>
-                        <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
-                          {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
-                        </td>
-                        {sortedParticipants.map(participant => {
-                          const bet = game.bets.find(b => b.owner_id === participant.id);
-                          let predictionClass = 'no-bet';
-                          if (bet) {
-                            if (game.finished) {
-                              if (bet.points === 1) predictionClass = 'correct-prediction';
-                              else if (bet.points === 3) predictionClass = 'diff-prediction';
-                              else if (bet.points === 5) predictionClass = 'exact-prediction';
-                              else predictionClass = 'incorrect-prediction';
-                            } else if (gameStarted) {
-                              predictionClass = 'pending-prediction';
-                            }
-                          }
-                          return (
-                            <td
-                              key={participant.id}
-                              data-label={participant.username}
-                              className={`${predictionClass} ${participant.id === currentUserId ? 'current-user-column' : ''}`}
-                              title={bet && bet.hidden && participant.id === currentUserId ? "Hidden bet" : ""}
-                            >
-                              {bet ? (
-                                  gameStarted || game.finished || !bet.hidden || participant.id === currentUserId ?
-                                    `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` :
-                                    'X - X'
-                                ) : '-'}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                <tr className="total-points">
-                    <td colSpan={3} className="game-info">TOTAL POINTS</td>
-                    {sortedParticipants.map(participant => (
-                        <td
-                          key={participant.id}
-                          className={participant.id === currentUserId ? 'current-user-column' : ''}
-                        >
-                      {calculateTotalPoints(participant.id)}
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            <div className="predictions-table-container">
+                <table className="predictions-table">
+                    <thead>
+                        <tr>
+                            <th className="game-info">DATE & TIME</th>
+                            <th className="game-info">GAME</th>
+                            <th className="game-info">SCORE</th>
+                            {sortedParticipants.map(participant => (
+                                <th
+                                    key={participant.id}
+                                    data-participant-id={participant.id}
+                                    className={participant.id === currentUserId ? 'current-user-column' : ''}
+                                >
+                                    {participant.username}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredGames
+                            .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+                            .map(game => {
+                                const gameStarted = isGameStarted(game);
+                                return (
+                                    <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
+                                        <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
+                                        <td data-label="GAME">
+                                            {game.team1?.toUpperCase() || 'TBA'} <span className="vs">vs</span> {game.team2?.toUpperCase() || 'TBA'}
+                                        </td>
+                                        <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
+                                            {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
+                                        </td>
+                                        {sortedParticipants.map(participant => {
+                                            const bet = game.bets.find(b => b.owner_id === participant.id);
+                                            let predictionClass = 'no-bet';
+                                            if (bet) {
+                                                if (game.finished) {
+                                                    if (bet.points === 1) predictionClass = 'correct-prediction';
+                                                    else if (bet.points === 3) predictionClass = 'diff-prediction';
+                                                    else if (bet.points === 5) predictionClass = 'exact-prediction';
+                                                    else predictionClass = 'incorrect-prediction';
+                                                } else if (gameStarted) {
+                                                    predictionClass = 'pending-prediction';
+                                                }
+                                            }
+                                            return (
+                                                <td
+                                                    key={participant.id}
+                                                    data-label={participant.username}
+                                                    className={`${predictionClass} ${participant.id === currentUserId ? 'current-user-column' : ''}`}
+                                                    title={bet && bet.hidden && participant.id === currentUserId ? "Hidden bet" : ""}
+                                                >
+                                                    {bet ? (
+                                                        gameStarted || game.finished || !bet.hidden || participant.id === currentUserId ?
+                                                            `${bet.team1_score}-${bet.team2_score}${game.finished ? ` (${bet.points})` : ''}` :
+                                                            'X - X'
+                                                    ) : '-'}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
+                        <tr className="total-points">
+                            <td colSpan={3} className="game-info">TOTAL POINTS</td>
+                            {sortedParticipants.map(participant => (
+                                <td
+                                    key={participant.id}
+                                    className={participant.id === currentUserId ? 'current-user-column' : ''}
+                                >
+                                    <span className="participant-name">{participant.username}</span>
+                                    <span className="participant-points">{calculateTotalPoints(participant.id)}</span>
+                                </td>
+                            ))}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         );
     };
 
@@ -274,7 +263,7 @@ function Home() {
                         <Link to="/account" className="account-button">MY ACCOUNT</Link>
                     ) : (
                         <>
-                            <Link to="/signin" className="login-button">LOGIN</Link>
+                        <Link to="/signin" className="login-button">LOGIN</Link>
                             <Link to="/signup" className="login-button">REGISTER</Link>
                         </>
                     )}
