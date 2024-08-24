@@ -20,9 +20,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    environment:
-      DATABASE_URL: "postgresql://myuser:mypassword@db/mydatabase"
-      SECRET_KEY: "supersecretkey"
 
   frontend:
     build:

@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -9,7 +10,9 @@ from ..models.user import User
 from ..db.database import get_db
 from . import MSK
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "fallback_secret_key")
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 150
 
