@@ -46,6 +46,7 @@ async def create_tournament(
 async def get_tournaments(
     finished: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     query = db.query(Tournament)
 
@@ -57,7 +58,9 @@ async def get_tournaments(
 
 
 @router.get("/tournaments/{tournament_id}", response_model=TournamentRead)
-async def get_tournament(tournament_id: int, db: Session = Depends(get_db)):
+async def get_tournament(
+    tournament_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     tournament = db.query(Tournament).filter(Tournament.id == tournament_id).first()
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
@@ -188,7 +191,11 @@ async def delete_tournament(
 
 
 @router.get("/tournaments/{tournament_id}/leaderboard", response_model=list[UserPoints])
-async def get_leaderboard(tournament_id: int, db: Session = Depends(get_db)):
+async def get_leaderboard(
+    tournament_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     leaderboard = (
         db.query(User.username, func.sum(Bet.points).label("total_points"))
         .join(Bet, Bet.owner_id == User.id)

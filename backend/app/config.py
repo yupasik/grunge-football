@@ -10,17 +10,21 @@ class DBConfig(BaseModel):
     port: int
     name: str
 
+
 class MailConfig(BaseModel):
     username: str
     password: SecretStr
     mail_from: EmailStr
 
+
 class DataConfig(BaseModel):
     token: SecretStr
+
 
 class TelegramConfig(BaseModel):
     token: SecretStr
     channel_id: str
+
 
 class Config(BaseSettings):
     is_test: bool = False

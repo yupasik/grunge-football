@@ -21,6 +21,7 @@ bcrypt = "^4.2.0"
 fastapi-mail = "^1.4.1"
 python-telegram-bot = "^21.4"
 pyyaml = "^6.0.2"
+apscheduler = "^3.10.4"
 
 
 [tool.poetry.group.dev.dependencies]

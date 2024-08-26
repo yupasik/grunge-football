@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer
 from sqlalchemy.orm import declarative_base
 from ..db.database import Base
 
+
 class NotificationLog(Base):
     __tablename__ = "notification_log"
 

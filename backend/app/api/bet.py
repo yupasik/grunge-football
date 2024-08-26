@@ -97,12 +97,14 @@ async def update_bet(
 
     return bet_response
 
+
 @router.get("/bets", response_model=list[BetRead])
 async def get_bets(
     user_id: Optional[int] = Query(None, description="Filter by user ID"),
     game_id: Optional[int] = Query(None, description="Filter by game ID"),
     tournament_id: Optional[int] = Query(None, description="Filter by tournament ID"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     # Explicitly define join conditions
     query = db.query(Bet).join(Game, Bet.game_id == Game.id).join(Tournament, Game.tournament_id == Tournament.id)
@@ -146,7 +148,7 @@ async def get_bets(
 
 
 @router.get("/bets/{bet_id}", response_model=BetRead)
-async def get_bet(bet_id: int, db: Session = Depends(get_db)):
+async def get_bet(bet_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     bet = db.query(Bet).filter(Bet.id == bet_id).first()
     if not bet:
         raise HTTPException(status_code=404, detail="Bet not found")

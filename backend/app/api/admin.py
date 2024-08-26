@@ -6,6 +6,7 @@ from ..models.game import Game
 from ..models.admin import NotificationLog
 from ..models.tournament import Tournament
 from ..notifications.send import send_notifications
+from ..core.security import get_current_user
 
 
 router = APIRouter()
@@ -30,7 +31,13 @@ def fetch_all_users(db: Session):
 
 
 @router.post("/notify")
-async def notify_new_games(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+async def notify_new_games(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     last_game_id = get_last_processed_game_id(db)
     new_games = fetch_new_games(db, last_game_id)
 

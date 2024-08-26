@@ -45,7 +45,11 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/admin/signup", response_model=UserInDB)
-def signup_admin(user: UserCreate, db: Session = Depends(get_db)):
+def signup_admin(
+    user: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
