@@ -21,7 +21,7 @@ async def send_notifications(games, users, db: Session):
                 title=game.title,
                 team1=game.team1,
                 team2=game.team2,
-                date = game.start_time,
+                date=game.start_time,
             )
         )
     message = BODY_TEMPLATE.format(games="".join(games_data))

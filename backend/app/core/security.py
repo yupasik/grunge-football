@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -9,12 +8,14 @@ from sqlalchemy.orm import Session
 from ..models.user import User
 from ..db.database import get_db
 from ..api import MSK
+from ..config import load_config
 
-load_dotenv()
+app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+config = load_config(config_file=os.path.join(app_path, "config.yaml"))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+JWT_SECRET_KEY = config.jwt_secret_key.get_secret_value()
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 7200
 

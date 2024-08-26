@@ -1,19 +1,18 @@
 import os
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from ..config import load_config
 
-load_dotenv()
+app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+config = load_config(config_file=os.path.join(app_path, "config.yaml"))
 
-DB_USER = os.getenv("POSTGRES_USER")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("POSTGRES_DB")
-IS_TEST = os.getenv("IS_TEST", False)
-
-print(DB_PASSWORD)
+DB_USER = config.db.user
+DB_PASSWORD = config.db.password.get_secret_value()
+DB_HOST = config.db.host
+DB_PORT = config.db.port
+DB_NAME = config.db.name
+IS_TEST = config.is_test
 
 if IS_TEST:
     SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"

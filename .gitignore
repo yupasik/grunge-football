@@ -12,6 +12,7 @@
 react_frontend/.DS_Store
 backend/test.db
 docker-compose.yml
+backend/app/config.yaml
 
 # AWS User-specific
 .idea/**/aws.xml

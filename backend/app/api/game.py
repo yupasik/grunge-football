@@ -45,12 +45,15 @@ async def create_game(
 async def get_games(
     finished: Optional[bool] = Query(None),  # Optional query parameter for finished status
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     # Query games with tournament information
-    query = db.query(Game, Tournament.name.label("tournament_name"), Tournament.id.label("tournament_id"),
-                     Tournament.logo.label("tournament_logo")).join(
-        Tournament, Game.tournament_id == Tournament.id
-    )
+    query = db.query(
+        Game,
+        Tournament.name.label("tournament_name"),
+        Tournament.id.label("tournament_id"),
+        Tournament.logo.label("tournament_logo"),
+    ).join(Tournament, Game.tournament_id == Tournament.id)
 
     if finished is not None:
         query = query.filter(Game.finished == finished)
@@ -82,7 +85,7 @@ async def get_games(
 
 
 @router.get("/games/{game_id}", response_model=GameRead)
-async def get_game(game_id: int, db: Session = Depends(get_db)):
+async def get_game(game_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     game = db.query(Game).filter(Game.id == game_id).first()
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
@@ -180,6 +183,6 @@ async def finish_game(
 
 
 @router.get("/games/{game_id}/bets", response_model=list[BetRead])
-async def get_game_bets(game_id: int, db: Session = Depends(get_db)):
+async def get_game_bets(game_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     bets = db.query(Bet).filter(Bet.game_id == game_id).all()
     return bets
