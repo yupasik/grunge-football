@@ -1,11 +1,12 @@
 import os
-from dotenv import load_dotenv
 from telegram import Bot
+from ..config import load_config
 
-load_dotenv()
+app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+config = load_config(config_file=os.path.join(app_path, "config.yaml"))
 
-TG_TOKEN = os.getenv("TG_TOKEN")
-CHANEL_ID = os.getenv("CHANEL_ID")
+TG_TOKEN = config.telegram.token.get_secret_value()
+CHANEL_ID = config.telegram.channel_id
 
 
 bot = Bot(token=TG_TOKEN)

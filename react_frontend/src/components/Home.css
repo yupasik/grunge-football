@@ -111,7 +111,7 @@ h3 {
   background-color: #DDDDDD;
   justify-content: center;
   align-items: center;
-  border: 2px solid #ff3333; /* Red border */
+  border: 2px solid #ff3333;
   box-shadow: 0 0 10px rgba(255, 51, 51, 0.5); /* Optional: Adds some shadow for a subtle effect */
   overflow: hidden;
   margin-right: 10px;
@@ -120,7 +120,7 @@ h3 {
 }
 
 .current-user-column {
-  background-color: rgb(255, 255, 51, 0.04); /* Легкий желтый фон */
+  background-color: rgb(255, 255, 51, 0.04);
   font-weight: bold;
 }
 
