@@ -1,9 +1,14 @@
+from typing import Optional
+
 from pydantic import BaseModel
+
+from app.schemas.team import TeamRead
 
 
 class TournamentBase(BaseModel):
-    name: str
-    logo: str
+    name: Optional[str] = None
+    logo: Optional[str] = None
+    data_id: Optional[int] = None
 
 
 class TournamentCreate(TournamentBase):
@@ -15,6 +20,7 @@ class TournamentRead(TournamentBase):
     finished: bool
     games: list["GameRead"] = []
     prizes: list["PrizeRead"] = []
+    teams: list["TeamRead"] = []
 
     class Config:
         from_attributes = True
@@ -22,3 +28,4 @@ class TournamentRead(TournamentBase):
 
 from .game import GameRead
 from .prize import PrizeRead
+from .team import TeamRead

@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from ..db.database import get_db
-from ..models.user import User
-from ..models.bet import Bet
-from ..models.game import Game
-from ..models.tournament import Tournament
-from ..schemas.user import UserCreate, UserInDB, UserSignIn, Token, UserUpdate
-from ..schemas.bet import BetRead
-from ..core.security import (
+from app.db.database import get_db
+from app.models.user import User
+from app.models.bet import Bet
+from app.models.game import Game
+from app.models.tournament import Tournament
+from app.schemas.user import UserCreate, UserInDB, UserSignIn, Token, UserUpdate
+from app.schemas.bet import BetRead
+from app.core.security import (
     hash_password,
     verify_password,
     create_access_token,
@@ -48,7 +48,6 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
 def signup_admin(
     user: UserCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:

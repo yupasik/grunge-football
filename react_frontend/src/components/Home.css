@@ -340,21 +340,16 @@ h3 {
   padding: 10px;
 }
 
-/* Стиль для "vs" в названии игры */
 .predictions-table td.game-info .vs {
   color: #ff3333;
   font-weight: bold;
   margin: 0 5px;
 }
 
+.participant-name {
+    display: none;
+}
 
-
-
-/*.tournament-select-container {*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    flex-grow: 1;*/
-/*}*/
 .current-match {
     background-color: #444 !important;
     animation: pulse 2s infinite;
@@ -540,6 +535,7 @@ h3 {
 
   .participant-name {
     text-align: left;
+    display: inline;
   }
 
   .participant-points {
@@ -547,8 +543,3 @@ h3 {
     color: #ff3333;
   }
 }
-
-.participant-name {
-    display: none;
-}
-

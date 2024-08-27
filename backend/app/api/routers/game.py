@@ -2,14 +2,14 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from ..db.database import get_db
-from ..models.game import Game
-from ..schemas.game import GameCreate, GameRead, GameUpdate, GameFinish
-from ..models.bet import Bet
-from ..schemas.bet import BetRead
-from ..models.user import User
-from ..models.tournament import Tournament
-from ..core.security import get_current_user
+from app.db.database import get_db
+from app.models.game import Game
+from app.schemas.game import GameCreate, GameRead, GameUpdate, GameFinish
+from app.models.bet import Bet
+from app.schemas.bet import BetRead
+from app.models.user import User
+from app.models.tournament import Tournament
+from app.core.security import get_current_user
 
 router = APIRouter()
 
@@ -64,7 +64,6 @@ async def get_games(
         game_data = GameRead.from_orm(game)
         game_data.tournament_name = tournament_name
 
-        # Обогащаем каждую ставку информацией о игре и турнире
         enriched_bets = []
         for bet in game.bets:
             bet_data = BetRead.from_orm(bet)
@@ -77,7 +76,7 @@ async def get_games(
 
             enriched_bets.append(bet_data)
 
-        game_data.bets = enriched_bets  # Добавляем обогащенные ставки в game_data
+        game_data.bets = enriched_bets
 
         result.append(game_data)
 

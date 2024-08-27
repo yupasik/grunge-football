@@ -3,13 +3,13 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from datetime import datetime, timedelta
 from sqlalchemy import exists
 from sqlalchemy.orm import Session
-from ..db.database import get_db
-from ..models.bet import Bet
-from ..schemas.bet import BetCreate, BetRead, BetUpdate
-from ..models.tournament import Tournament
-from ..models.user import User
-from ..models.game import Game
-from ..core.security import get_current_user
+from app.db.database import get_db
+from app.models.bet import Bet
+from app.schemas.bet import BetCreate, BetRead, BetUpdate
+from app.models.tournament import Tournament
+from app.models.user import User
+from app.models.game import Game
+from app.core.security import get_current_user
 
 router = APIRouter()
 
