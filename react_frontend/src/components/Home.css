@@ -125,8 +125,8 @@ h3 {
 }
 
 .tournament-logo {
-  width: 100%; /* Adjust to fit inside the square */
-  height: 100%; /* Adjust to fit inside the square */
+  width: 90%; /* Adjust to fit inside the square */
+  height: 90%; /* Adjust to fit inside the square */
   object-fit: contain;
   position: absolute;
   top: 50%;

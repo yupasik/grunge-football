@@ -22,11 +22,20 @@ class TeamCreate(TeamBase):
 
 
 class TeamUpdate(TeamCreate):
+    id: int
     pass
+
+
+class TeamReadSimple(TeamCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
 
 
 class TeamRead(TeamCreate):
     id: int
+    tournaments: list
 
     class Config:
         from_attributes = True

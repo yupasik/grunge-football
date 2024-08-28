@@ -9,9 +9,9 @@ async def get_competitions(api: FootballDataAPI = Depends(get_football_data_api)
     return await api.get_competitions()
 
 
-@router.get("/competitions/{competition_symbol}")
-async def get_competition(competition_symbol: str, api: FootballDataAPI = Depends(get_football_data_api)):
-    return await api.get_competition(competition_symbol)
+@router.get("/competitions/{competition_id}")
+async def get_competition(competition_id: int, api: FootballDataAPI = Depends(get_football_data_api)):
+    return await api.get_competition(competition_id)
 
 
 @router.get("/competitions/{competition_id}/teams")

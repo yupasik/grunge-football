@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.team import Team
 from app.models.area import Area
 from app.schemas.team import TeamCreate, TeamUpdate
+from sqlalchemy.orm import joinedload
 
 
 def create_team(db: Session, team: TeamCreate):
@@ -30,11 +31,11 @@ def create_team(db: Session, team: TeamCreate):
     return db_team
 
 
-def get_team(db: Session, team_id: int):
+def get_team(db: Session, team_id: int) -> Team:
     return db.query(Team).filter(Team.id == team_id).first()
 
 
-def get_teams(db: Session, skip: int = 0, limit: int = 100):
+def get_teams(db: Session, skip: int = 0, limit: int = 1000):
     return db.query(Team).offset(skip).limit(limit).all()
 
 

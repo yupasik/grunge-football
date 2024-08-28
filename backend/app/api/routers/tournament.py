@@ -38,32 +38,35 @@ async def create_tournament(
     if tournament.data_id is not None:
         # Fetch team details from football-data.org API
         tournament_data = await football_api.get_competition(competition_id=tournament.data_id)
-        if not tournament_data:
-            pass
+        if tournament_data:
 
-        start_year = tournament_data.get("currentSeason", {}).get("startDate", "").split("-")[0]
-        end_year = tournament_data.get("currentSeason", {}).get("endDate", "").split("-")[0]
+            start_year = tournament_data.get("currentSeason", {}).get("startDate", "").split("-")[0]
+            end_year = tournament_data.get("currentSeason", {}).get("endDate", "").split("-")[0]
+            season_id = tournament_data.get("currentSeason", {}).get("id")
 
-        if not start_year and not end_year:
-            name = tournament.name
-        else:
-            if start_year == end_year:
-                name = f"{tournament_data['name']} [{start_year}]"
+            if not start_year and not end_year:
+                name = tournament.name
             else:
-                name = f"{tournament_data['name']} [{start_year}/{end_year}]"
+                if start_year == end_year:
+                    name = f"{tournament_data['name']} [{start_year}]"
+                else:
+                    name = f"{tournament_data['name']} [{start_year}/{end_year}]"
 
-        # Create team using data from the API
-        tournament = TournamentCreate(
-            data_id=tournament.data_id,
-            name=name,
-            logo=tournament_data["emblem"],
-        )
-
+            # Create team using data from the API
+            tournament = TournamentCreate(
+                data_id=tournament.data_id,
+                season_id=season_id,
+                name=name,
+                logo=tournament_data["emblem"],
+            )
+        else:
+            if tournament.name is None or tournament.logo is None:
+                raise HTTPException(status_code=400, detail="Tournament should have name and emblem")
     else:
         if tournament.name is None or tournament.logo is None:
             raise HTTPException(status_code=400, detail="Tournament should have name and emblem")
 
-    new_tournament = Tournament(name=tournament.name, logo=tournament.logo, data_id=tournament.data_id, finished=False)
+    new_tournament = Tournament(name=tournament.name, logo=tournament.logo, data_id=tournament.data_id, season_id=tournament.season_id, finished=False)
     try:
         db.add(new_tournament)
         db.commit()
@@ -95,7 +98,7 @@ async def create_tournament(
 
             if existing_team:
                 # If the team already exists, update the details
-                existing_team.name = team_data["name"]
+                existing_team.name = team_data["name"].rstrip(" FC")
                 existing_team.emblem = team_data["crest"]
                 existing_team.area_id = area.id
                 db.add(existing_team)
@@ -166,25 +169,29 @@ async def update_tournament(
     if tournament.data_id is not None:
         # Fetch tournament details from football-data.org API
         tournament_data = await football_api.get_competition(competition_id=tournament.data_id)
-        if not tournament_data:
-            pass
+        if tournament_data:
 
-        start_year = tournament_data.get("currentSeason", {}).get("startDate", "").split("-")[0]
-        end_year = tournament_data.get("currentSeason", {}).get("endDate", "").split("-")[0]
+            start_year = tournament_data.get("currentSeason", {}).get("startDate", "").split("-")[0]
+            end_year = tournament_data.get("currentSeason", {}).get("endDate", "").split("-")[0]
+            season_id = tournament_data.get("currentSeason", {}).get("id")
 
-        if not start_year and not end_year:
-            name = tournament.name
-        else:
-            if start_year == end_year:
-                name = f"{tournament_data['name']} [{start_year}]"
+            if not start_year and not end_year:
+                name = tournament.name
             else:
-                name = f"{tournament_data['name']} [{start_year}/{end_year}]"
+                if start_year == end_year:
+                    name = f"{tournament_data['name']} [{start_year}]"
+                else:
+                    name = f"{tournament_data['name']} [{start_year}/{end_year}]"
 
-        tournament = TournamentCreate(
-            data_id=tournament.data_id,
-            name=name,
-            logo=tournament_data.get("emblem"),
-        )
+            tournament = TournamentCreate(
+                data_id=tournament.data_id,
+                season_id=season_id,
+                name=name,
+                logo=tournament_data.get("emblem"),
+            )
+        else:
+            if tournament.name is None or tournament.logo is None:
+                raise HTTPException(status_code=400, detail="Tournament should have name and emblem")
 
     else:
         if tournament.name is None or tournament.logo is None:
@@ -223,7 +230,7 @@ async def update_tournament(
 
             if existing_team:
                 # If the team already exists, update the details
-                existing_team.name = team_data["name"]
+                existing_team.name = team_data["name"].rstrip(" FC")
                 existing_team.emblem = team_data["crest"]
                 existing_team.area_id = area.id
                 db_tournament.teams.append(existing_team)
@@ -231,7 +238,7 @@ async def update_tournament(
                 # If the team does not exist, create a new entry
                 new_team = Team(
                     data_id=team_data["id"],
-                    name=team_data["name"],
+                    name=team_data["name"].rstrip(" FC"),
                     emblem=team_data["crest"],
                     area_id=area.id,  # Link the team to the area
                 )
@@ -262,6 +269,10 @@ async def finish_tournament(
     unfinished_games = db.query(Game).filter(Game.tournament_id == tournament_id, Game.finished == False).all()
     if unfinished_games:
         raise HTTPException(status_code=400, detail="Cannot finish the tournament until all games are finished")
+
+    # Remove the tournament from teams' list of tournaments
+    for team in db_tournament.teams:
+        team.tournaments.remove(db_tournament)
 
     user_points = {}
 

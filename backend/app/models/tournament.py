@@ -8,6 +8,7 @@ class Tournament(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     data_id = Column(Integer, nullable=True)
+    season_id = Column(Integer, nullable=True)
     name = Column(String, unique=True, index=True, nullable=False)
     logo = Column(String)
     finished = Column(Boolean, default=False)

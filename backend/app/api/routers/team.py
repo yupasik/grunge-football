@@ -53,9 +53,26 @@ async def read_team(
     # current_user: User = Depends(get_current_user),
 ):
     db_team = get_team(db, team_id)
+
     if not db_team:
         raise HTTPException(status_code=404, detail="Team not found")
-    return db_team
+
+    tournament_list = [t.name for t in db_team.tournaments if not t.finished]
+
+    team_response = TeamRead(
+        id=db_team.id,
+        name=db_team.name,
+        emblem=db_team.emblem,
+        area=Area(
+            id=db_team.area.id,
+            name=db_team.area.name,
+            code=db_team.area.code,
+            flag=db_team.area.flag,
+        ) if db_team.area else None,
+        tournaments=tournament_list
+    )
+
+    return team_response
 
 
 @router.get("/teams", response_model=list[TeamRead])
@@ -65,7 +82,29 @@ async def read_teams(
     db: Session = Depends(get_db),
     # current_user: User = Depends(get_current_user),
 ):
-    return get_teams(db, skip=skip, limit=limit)
+    db_teams = get_teams(db, skip=skip, limit=limit)
+
+    teams_response = []
+    for db_team in db_teams:
+        tournament_list = [t.name for t in db_team.tournaments if not t.finished]
+
+        team_response = TeamRead(
+            id=db_team.id,
+            data_id=db_team.data_id,
+            name=db_team.name,
+            emblem=db_team.emblem,
+            area=Area(
+                id=db_team.area.id,
+                name=db_team.area.name,
+                code=db_team.area.code,
+                flag=db_team.area.flag,
+            ) if db_team.area else None,
+            tournaments=tournament_list
+        )
+
+        teams_response.append(team_response)
+
+    return teams_response
 
 
 @router.put("/teams/{team_id}", response_model=TeamRead)

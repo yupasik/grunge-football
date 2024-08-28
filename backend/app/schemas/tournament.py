@@ -9,6 +9,7 @@ class TournamentBase(BaseModel):
     name: Optional[str] = None
     logo: Optional[str] = None
     data_id: Optional[int] = None
+    season_id: Optional[int] = None
 
 
 class TournamentCreate(TournamentBase):
@@ -20,7 +21,7 @@ class TournamentRead(TournamentBase):
     finished: bool
     games: list["GameRead"] = []
     prizes: list["PrizeRead"] = []
-    teams: list["TeamRead"] = []
+    teams: list["TeamReadSimple"] = []
 
     class Config:
         from_attributes = True
@@ -28,4 +29,4 @@ class TournamentRead(TournamentBase):
 
 from .game import GameRead
 from .prize import PrizeRead
-from .team import TeamRead
+from .team import TeamReadSimple
