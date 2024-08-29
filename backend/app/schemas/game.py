@@ -18,7 +18,6 @@ class GameCreate(GameBase): ...
 
 
 class GameUpdate(BaseModel):
-    id: int
     team1_score: int
     team2_score: int
 

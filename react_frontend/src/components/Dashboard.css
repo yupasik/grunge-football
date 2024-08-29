@@ -990,3 +990,38 @@ button:hover {
     margin: 5px 0;
   }
 }
+
+
+
+
+
+
+.matches-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.matches-table th,
+.matches-table td {
+  border: 1px solid #444;
+  padding: 10px;
+  text-align: left;
+}
+
+.matches-table th {
+  background-color: #333;
+  color: #fff;
+}
+
+.matches-table button {
+  background-color: #ff3333;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.matches-table button:hover {
+  background-color: #ff6666;
+}

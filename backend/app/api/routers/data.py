@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
+from sqlalchemy.orm import Session
+from app.db.database import get_db
 from app.football_data.api import FootballDataAPI, get_football_data_api
 
 router = APIRouter()
@@ -20,7 +22,7 @@ async def get_teams(competition_id: int, api: FootballDataAPI = Depends(get_foot
 
 
 @router.get("/competitions/{competition_id}/games")
-async def get_teams(competition_id: int, api: FootballDataAPI = Depends(get_football_data_api)):
+async def get_games(competition_id: int, api: FootballDataAPI = Depends(get_football_data_api)):
     return await api.get_matches(competition_id)
 
 

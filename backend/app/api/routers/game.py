@@ -99,48 +99,6 @@ async def create_game(
     db.refresh(new_game)
     return new_game
 
-#
-# @router.get("/games", response_model=list[GameRead])
-# async def get_games(
-#     finished: Optional[bool] = Query(None),  # Optional query parameter for finished status
-#     db: Session = Depends(get_db),
-#     current_user: User = Depends(get_current_user),
-# ):
-#     # Query games with tournament information
-#     query = db.query(
-#         Game,
-#         Tournament.name.label("tournament_name"),
-#         Tournament.id.label("tournament_id"),
-#         Tournament.logo.label("tournament_logo"),
-#     ).join(Tournament, Game.tournament_id == Tournament.id)
-#
-#     if finished is not None:
-#         query = query.filter(Game.finished == finished)
-#
-#     games = query.all()
-#     result = []
-#     for game, tournament_name, tournament_id, tournament_logo in games:
-#         game_data = GameRead.from_orm(game)
-#         game_data.tournament_name = tournament_name
-#
-#         enriched_bets = []
-#         for bet in game.bets:
-#             bet_data = BetRead.from_orm(bet)
-#             bet_data.start_time = game.start_time
-#             bet_data.team1 = game.team1
-#             bet_data.team2 = game.team2
-#             bet_data.tournament_name = tournament_name
-#             bet_data.tournament_id = tournament_id
-#             bet_data.logo = tournament_logo
-#
-#             enriched_bets.append(bet_data)
-#
-#         game_data.bets = enriched_bets
-#
-#         result.append(game_data)
-#
-#     return result
-
 
 @router.get("/games", response_model=list[GameRead])
 async def get_games(

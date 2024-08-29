@@ -1,5 +1,5 @@
 import yaml
-from pydantic import BaseModel, EmailStr, SecretStr
+from pydantic import BaseModel, EmailStr, SecretStr, HttpUrl
 from pydantic_settings import BaseSettings
 
 
@@ -24,7 +24,6 @@ class DataConfig(BaseModel):
 class TelegramConfig(BaseModel):
     token: SecretStr
     channel_id: str
-
 
 class Config(BaseSettings):
     is_test: bool = False

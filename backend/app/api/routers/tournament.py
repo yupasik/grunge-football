@@ -459,3 +459,26 @@ async def get_leaderboard(
         .all()
     )
     return leaderboard
+
+
+@router.get("/tournaments/{tournament_data_id}/games")
+async def get_competition_games(
+        tournament_data_id: int,
+        api: FootballDataAPI = Depends(get_football_data_api),
+        db: Session = Depends(get_db)
+):
+    tournament = db.query(Tournament).filter(Tournament.data_id == tournament_data_id).first()
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+
+    matches_data = await api.get_matches(tournament_data_id)
+
+    existing_game_ids = db.query(Game.data_id).filter(Game.data_id.isnot(None)).all()
+    existing_game_ids = set(id for (id,) in existing_game_ids)
+
+    filtered_matches = [
+        match for match in matches_data['matches']
+        if match['id'] not in existing_game_ids and match['status'] != 'FINISHED'
+    ]
+
+    return {"matches": filtered_matches}

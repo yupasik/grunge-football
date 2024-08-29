@@ -459,6 +459,103 @@ const Dashboard = () => {
     );
   };
 
+  const MatchesManagement = () => {
+    const [selectedTournament, setSelectedTournament] = useState("");
+    const [matches, setMatches] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      if (selectedTournament) {
+        fetchMatches(selectedTournament);
+      }
+    }, [selectedTournament]);
+
+    const fetchMatches = async (tournamentId) => {
+      setLoading(true);
+      try {
+        const tournament = tournaments.find(t => t.data_id === parseInt(tournamentId));
+        if (!tournament) {
+          console.error('Tournament not found');
+          return;
+        }
+        const response = await axios.get(`${API_URL}/tournaments/${tournament.data_id}/games`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        });
+        setMatches(response.data.matches);
+      } catch (error) {
+        console.error('Error fetching matches:', error);
+      }
+      setLoading(false);
+    };
+
+    const addMatch = async (match) => {
+      console.log(match.competition);
+      const tournament = tournaments.find(t => t.data_id === parseInt(match.competition.id));
+      console.log(tournament);
+      console.log(match);
+      try {
+        await axios.post(`${API_URL}/games`, {
+          data_id: match.id,
+          tournament_id: tournament.id,
+          title: `Matchday: ${match.matchday}`,
+          start_time: match.utcDate,
+          team1: match.homeTeam.name,
+          team1_id: match.homeTeam.id,
+          team2: match.awayTeam.name,
+          team2_id: match.awayTeam.id
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        });
+        fetchMatches(selectedTournament);
+      } catch (error) {
+        console.error('Error adding match:', error);
+      }
+    };
+
+    return (
+      <div className="matches-management">
+        <select
+          value={selectedTournament}
+          onChange={(e) => setSelectedTournament(e.target.value)}
+        >
+          <option value="">Select Tournament</option>
+          {tournaments.map(t => (
+            <option key={t.id} value={t.data_id}>{t.name}</option>
+          ))}
+        </select>
+
+        {loading ? (
+          <p>Loading matches...</p>
+        ) : (
+          <table className="matches-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Home Team</th>
+                <th>Away Team</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {matches.map(match => (
+                <tr key={match.id}>
+                  <td>{new Date(match.utcDate).toLocaleString()}</td>
+                  <td>{match.homeTeam.name}</td>
+                  <td>{match.awayTeam.name}</td>
+                  <td>{match.status}</td>
+                  <td>
+                    <button onClick={() => addMatch(match)}>Add Match</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    );
+  };
+
   const CreateGameForm = ({onClose, fetchData, tournaments}) => {
     const [formData, setFormData] = useState({
       title: "",
@@ -817,34 +914,41 @@ const Dashboard = () => {
 
       <div className="tab-container">
         <button
-          className={`tab-button ${activeTab === "games" ? "active" : ""}`}
-          onClick={() => setActiveTab("games")}
+            className={`tab-button ${activeTab === "games" ? "active" : ""}`}
+            onClick={() => setActiveTab("games")}
         >
           Games
         </button>
         <button
-          className={`tab-button ${activeTab === "tournaments" ? "active" : ""}`}
-          onClick={() => setActiveTab("tournaments")}
+            className={`tab-button ${activeTab === "tournaments" ? "active" : ""}`}
+            onClick={() => setActiveTab("tournaments")}
         >
           Tournaments
         </button>
         <button
-          className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`}
-          onClick={() => setActiveTab('teams')}
+            className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`}
+            onClick={() => setActiveTab('teams')}
         >
           Teams
         </button>
         <button
-          className={`tab-button ${activeTab === "users" ? "active" : ""}`}
-          onClick={() => setActiveTab("users")}
+            className={`tab-button ${activeTab === "matches" ? "active" : ""}`}
+            onClick={() => setActiveTab("matches")}
+        >
+          Matches
+        </button>
+        <button
+            className={`tab-button ${activeTab === "users" ? "active" : ""}`}
+            onClick={() => setActiveTab("users")}
         >
           Users
         </button>
       </div>
 
-      {activeTab === "games" && <GamesManagement />}
-      {activeTab === "tournaments" && <TournamentsManagement />}
+      {activeTab === "games" && <GamesManagement/>}
+      {activeTab === "tournaments" && <TournamentsManagement/>}
       {activeTab === "teams" && <TeamsManagement />}
+      {activeTab === "matches" && <MatchesManagement />}
       {activeTab === "users" && <UsersManagement />}
     </div>
   );
