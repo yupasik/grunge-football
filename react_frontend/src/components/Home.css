@@ -297,9 +297,8 @@ h3 {
 }
 
 .predictions-table .vs {
-  color: #ff3333;  /* Красный цвет, соответствующий вашей цветовой схеме */
+  color: #ff3333;
   font-weight: bold;
-  margin: 0 5px;  /* Добавляем небольшой отступ слева и справа */
 }
 
 .predict-win-text {
@@ -343,7 +342,6 @@ h3 {
 .predictions-table td.game-info .vs {
   color: #ff3333;
   font-weight: bold;
-  margin: 0 5px;
 }
 
 .participant-name {
@@ -406,12 +404,50 @@ h3 {
   color: #ff3333;
 }
 
+.predictions-table td[data-label="GAME"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .predictions-table td[data-label="GAME"] {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+}
+
 
 .team-emblem-table {
   width: 30px;
   height: 30px;
+  object-fit: contain;
   vertical-align: middle;
-  margin: 5px 5px;
+}
+
+
+.vs-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10%;
+  margin: 0 5px;
+}
+
+@media (max-width: 768px) {
+  .vs-container {
+    width: 100%;
+    margin: 5px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .team-container.left,
+  .team-container.right {
+    justify-content: center;
+  }
 }
 
 .team1-name {
@@ -422,12 +458,53 @@ h3 {
     margin-left: 5px; /* Space between the team name and the emblem */
 }
 
-/*.predictions-table td[data-label="GAME"] {*/
+.game-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/*.team-container {*/
 /*  display: flex;*/
 /*  align-items: center;*/
-/*  justify-content: center;*/
+/*  width: 45%; !* Adjust as needed *!*/
 /*}*/
 
+.team-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45%;
+}
+
+@media (max-width: 768px) {
+  .team-container {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+.team-container.left {
+  justify-content: flex-end;
+}
+
+.team-container.right {
+  justify-content: flex-start;
+}
+
+
+/*@media (max-width: 768px) {*/
+/*  .team-name {*/
+/*    display: none;*/
+/*  }*/
+/*  .team1-name {*/
+/*    width: 100%;*/
+/*  }*/
+/*  .team2-name {*/
+/*    width: 100%;*/
+/*  }*/
+/*}*/
 
 
 @media (max-width: 768px) {
@@ -566,4 +643,70 @@ h3 {
     text-align: right;
     color: #ff3333;
   }
+}
+.game-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.team-container {
+  display: flex;
+  align-items: center;
+  width: 45%;
+}
+
+.team-container.left {
+  justify-content: flex-end;
+}
+
+.team-container.right {
+  justify-content: flex-start;
+}
+
+.vs-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 10%;
+}
+
+.team-name {
+  margin: 0 5px;
+  font-size: 14px;
+}
+
+.team-emblem-table {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .game-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .team-container {
+    width: 100%;
+    justify-content: center;
+    margin: 5px 0;
+  }
+
+  .team-container.left,
+  .team-container.right {
+    flex-direction: row;
+  }
+
+  .vs-container {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  .team-name {
+    font-size: 12px;
+  }
+
 }
