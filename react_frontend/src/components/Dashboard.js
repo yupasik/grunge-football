@@ -459,25 +459,27 @@ const Dashboard = () => {
     );
   };
 
-  const CreateGameForm = ({onClose, fetchData}) => {
+  const CreateGameForm = ({onClose, fetchData, tournaments}) => {
     const [formData, setFormData] = useState({
       title: "",
       start_time: "",
       team1: "",
       team2: "",
       tournament_id: "",
+      data_id: ''
     });
 
     const handleChange = (e) => {
       setFormData({...formData, [e.target.name]: e.target.value});
     };
-    const config = {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    };
+
     const handleSubmit = async (e) => {
       e.preventDefault();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      };
       try {
         await axios.post(`${API_URL}/games`, formData, config);
         fetchData();
@@ -497,45 +499,47 @@ const Dashboard = () => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              placeholder="Title"
-              required
+              placeholder="Title (optional)"
             />
             <input
               type="datetime-local"
               name="start_time"
               value={formData.start_time}
               onChange={handleChange}
-              required
             />
             <input
               type="text"
               name="team1"
               value={formData.team1}
               onChange={handleChange}
-              placeholder="Team 1"
-              required
+              placeholder="Team 1 (optional)"
             />
             <input
               type="text"
               name="team2"
               value={formData.team2}
               onChange={handleChange}
-              placeholder="Team 2"
-              required
+              placeholder="Team 2 (optional)"
             />
             <select
               name="tournament_id"
               value={formData.tournament_id}
               onChange={handleChange}
-              required
             >
-              <option value="">Select Tournament</option>
+              <option value="">Select Tournament (optional)</option>
               {tournaments.map((tournament) => (
                 <option key={tournament.id} value={tournament.id}>
                   {tournament.name}
                 </option>
               ))}
             </select>
+            <input
+              type="number"
+              name="data_id"
+              value={formData.data_id}
+              onChange={handleChange}
+              placeholder="Football-data.org ID (optional)"
+            />
             <button type="submit">Create Game</button>
             <button type="button" onClick={onClose}>
               Cancel

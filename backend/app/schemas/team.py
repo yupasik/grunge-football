@@ -10,11 +10,18 @@ class Area(BaseModel):
     flag: HttpUrl
 
 
+
+class AreaRead(Area):
+
+    class Config:
+        from_attributes = True
+
+
 class TeamBase(BaseModel):
     name: Optional[str] = None
     emblem: Optional[str] = None
     data_id: Optional[int] = None
-    area: Optional[Area] = None
+    area: Optional[AreaRead] = None
 
 
 class TeamCreate(TeamBase):

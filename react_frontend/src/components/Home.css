@@ -406,6 +406,30 @@ h3 {
   color: #ff3333;
 }
 
+
+.team-emblem-table {
+  width: 30px;
+  height: 30px;
+  vertical-align: middle;
+  margin: 5px 5px;
+}
+
+.team1-name {
+    margin-right: 5px; /* Space between the team name and the emblem */
+}
+
+.team2-name {
+    margin-left: 5px; /* Space between the team name and the emblem */
+}
+
+/*.predictions-table td[data-label="GAME"] {*/
+/*  display: flex;*/
+/*  align-items: center;*/
+/*  justify-content: center;*/
+/*}*/
+
+
+
 @media (max-width: 768px) {
   body {
     padding: 10px;

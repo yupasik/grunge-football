@@ -2,12 +2,14 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from sqlalchemy import desc, func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 from app.db.database import get_db
 from app.models.tournament import Tournament
 from app.schemas.tournament import TournamentCreate, TournamentRead
 from app.schemas.user import UserPoints
+from app.schemas.bet import BetRead
+from app.schemas.game import GameRead
 from app.models.user import User
 from app.models.game import Game
 from app.models.bet import Bet
@@ -120,19 +122,71 @@ async def create_tournament(
 
     return new_tournament
 
+#
+# @router.get("/tournaments", response_model=list[TournamentRead])
+# async def get_tournaments(
+#     finished: Optional[bool] = Query(None),
+#     db: Session = Depends(get_db),
+# ):
+#     query = db.query(Tournament)
+#
+#     if finished is not None:
+#         query = query.filter(Tournament.finished == finished)
+#
+#     tournaments = query.all()
+#     return tournaments
+
 
 @router.get("/tournaments", response_model=list[TournamentRead])
 async def get_tournaments(
     finished: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Tournament)
+    query = db.query(Tournament).options(
+        joinedload(Tournament.games),
+        joinedload(Tournament.prizes),
+        joinedload(Tournament.teams).joinedload(Team.area)
+    )
 
     if finished is not None:
         query = query.filter(Tournament.finished == finished)
 
     tournaments = query.all()
-    return tournaments
+    result = []
+    for tournament in tournaments:
+        tournament_data = TournamentRead.model_validate(tournament)
+
+        # Создаем словарь для быстрого доступа к эмблемам команд
+        team_emblems = {team.data_id: team.emblem for team in tournament.teams}
+
+        # Обновляем данные игр
+        updated_games = []
+        for game in tournament.games:
+            game_data = GameRead.model_validate(game)
+            game_data.team1_emblem = team_emblems.get(game.team1_id)
+            game_data.team2_emblem = team_emblems.get(game.team2_id)
+            game_data.tournament_name = tournament.name
+            game_data.tournament_logo = tournament.logo
+
+            # Обновляем данные ставок
+            updated_bets = []
+            for bet in game.bets:
+                bet_data = BetRead.model_validate(bet)
+                bet_data.start_time = game.start_time
+                bet_data.team1 = game.team1
+                bet_data.team2 = game.team2
+                bet_data.tournament_name = tournament.name
+                bet_data.tournament_id = tournament.id
+                bet_data.logo = tournament.logo
+                updated_bets.append(bet_data)
+
+            game_data.bets = updated_bets
+            updated_games.append(game_data)
+
+        tournament_data.games = updated_games
+        result.append(tournament_data)
+
+    return result
 
 
 @router.get("/tournaments/{tournament_id}", response_model=TournamentRead)
@@ -140,10 +194,51 @@ async def get_tournament(
     tournament_id: int,
     db: Session = Depends(get_db),
 ):
-    tournament = db.query(Tournament).filter(Tournament.id == tournament_id).first()
+
+    query = db.query(Tournament).filter(Tournament.id == tournament_id).options(
+        joinedload(Tournament.games),
+        joinedload(Tournament.prizes),
+        joinedload(Tournament.teams).joinedload(Team.area)
+    )
+
+    tournament = query.first()
+
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
-    return tournament
+
+    tournament_data = TournamentRead.model_validate(tournament)
+
+    # Создаем словарь для быстрого доступа к эмблемам команд
+    team_emblems = {team.data_id: team.emblem for team in tournament.teams}
+
+    # Обновляем данные игр
+    updated_games = []
+    for game in tournament.games:
+        game_data = GameRead.model_validate(game)
+        game_data.team1_emblem = team_emblems.get(game.team1_id)
+        game_data.team2_emblem = team_emblems.get(game.team2_id)
+        game_data.tournament_name = tournament.name
+        game_data.tournament_logo = tournament.logo
+
+        # Обновляем данные ставок
+        updated_bets = []
+        for bet in game.bets:
+            bet_data = BetRead.model_validate(bet)
+            bet_data.start_time = game.start_time
+            bet_data.team1 = game.team1
+            bet_data.team2 = game.team2
+            bet_data.tournament_name = tournament.name
+            bet_data.tournament_id = tournament.id
+            bet_data.logo = tournament.logo
+            updated_bets.append(bet_data)
+
+        game_data.bets = updated_bets
+        updated_games.append(game_data)
+
+    tournament_data.games = updated_games
+
+
+    return tournament_data
 
 
 @router.put("/tournaments/{tournament_id}", response_model=TournamentRead)

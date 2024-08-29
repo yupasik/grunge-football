@@ -197,10 +197,31 @@ function Home() {
                             .map(game => {
                                 const gameStarted = isGameStarted(game);
                                 return (
-                                    <tr key={game.id} className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
+                                    <tr key={game.id}
+                                        className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
                                         <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
                                         <td data-label="GAME">
-                                            {game.team1?.toUpperCase() || 'TBA'} <span className="vs">vs</span> {game.team2?.toUpperCase() || 'TBA'}
+                                            <span className="team1-name">
+                                                {game.team1?.toUpperCase() || 'TBA'}
+                                            </span>
+                                            {game.team1_emblem && (
+                                                <img
+                                                    src={game.team1_emblem}
+                                                    alt={`${game.team1} emblem`}
+                                                    className="team-emblem-table"
+                                                />
+                                            )}
+                                            <span className="vs">vs</span>
+                                            {game.team2_emblem && (
+                                                <img
+                                                    src={game.team2_emblem}
+                                                    alt={`${game.team2} emblem`}
+                                                    className="team-emblem-table"
+                                                />
+                                            )}
+                                            <span className="team2-name">
+                                                {game.team2?.toUpperCase() || 'TBA'}
+                                            </span>
                                         </td>
                                         <td data-label="SCORE" className={gameStarted ? 'live-score' : ''}>
                                             {game.finished || gameStarted ? `${game.team1_score}-${game.team2_score}` : '—'}
