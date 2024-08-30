@@ -1,15 +1,20 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
-from ..db.database import get_db
-from ..models.game import Game
-from ..schemas.game import GameCreate, GameRead, GameUpdate, GameFinish
-from ..models.bet import Bet
-from ..schemas.bet import BetRead
-from ..models.user import User
-from ..models.tournament import Tournament
-from ..core.security import get_current_user
+from app.db.database import get_db
+from app.models.game import Game
+from app.schemas.game import GameCreate, GameRead, GameUpdate, GameFinish
+from app.models.bet import Bet
+from app.schemas.bet import BetRead
+from app.schemas.team import TeamCreate, Area, AreaRead
+from app.models.user import User
+from app.models.team import Team
+from app.models.tournament import Tournament
+from app.core.security import get_current_user
+from app.api.crud.team import create_team
+from app.football_data.api import FootballDataAPI, get_football_data_api
 
 router = APIRouter()
 
@@ -19,6 +24,7 @@ async def create_game(
     game: GameCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    football_api: FootballDataAPI = Depends(get_football_data_api),
 ):
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -27,14 +33,67 @@ async def create_game(
     if not tournament:
         raise HTTPException(status_code=400, detail="Tournament must be open to add games")
 
-    new_game = Game(
-        tournament_id=game.tournament_id,
-        title=game.title,
-        start_time=game.start_time,
-        team1=game.team1,
-        team2=game.team2,
-        finished=False,
-    )
+    if game.data_id:
+        db_game = db.query(Game).filter(Game.data_id == game.data_id).first()
+        if db_game:
+            raise HTTPException(status_code=400, detail="Game exists already")
+
+        game_data = await football_api.get_match(match_id=game.data_id)
+        if game_data:
+
+            # Use API data to populate game details
+            team1_id = game_data["homeTeam"]["id"]
+            team2_id = game_data["awayTeam"]["id"]
+
+            # Fetch teams from the database by their data_id
+            for team_id in [team1_id, team2_id]:
+                print(team_id)
+                db_team = db.query(Team).filter(Team.data_id == team_id).first()
+                if not db_team:
+                    team_data = await football_api.get_team_info(team_id=team_id)
+                    team = TeamCreate(
+                        data_id=team_id,
+                        name=team_data["name"].rstrip(" FC"),
+                        emblem=team_data["crest"],
+                        area=AreaRead(
+                            id=team_data["area"]["id"],
+                            name=team_data["area"]["name"],
+                            code=team_data["area"]["code"],
+                            flag=team_data["area"]["flag"],
+                        ),
+                    )
+                    create_team(db, team)
+
+            new_game = Game(
+                data_id=game.data_id,
+                tournament_id=game.tournament_id,
+                title=f"Matchday: {game_data['matchday']}",
+                team1=game_data["homeTeam"]["name"].rstrip(" FC"),
+                team1_id=team1_id,
+                start_time=datetime.strptime(game_data["utcDate"], "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=3),
+                team2=game_data["awayTeam"]["name"].rstrip(" FC"),
+                team2_id=team2_id,
+                finished=False,
+            )
+        else:
+            new_game = Game(
+                tournament_id=game.tournament_id,
+                title=game.title,
+                start_time=game.start_time,
+                team1=game.team1,
+                team2=game.team2,
+                finished=False,
+            )
+    else:
+
+        new_game = Game(
+            tournament_id=game.tournament_id,
+            title=game.title,
+            start_time=game.start_time,
+            team1=game.team1,
+            team2=game.team2,
+            finished=False,
+        )
     db.add(new_game)
     db.commit()
     db.refresh(new_game)
@@ -43,42 +102,42 @@ async def create_game(
 
 @router.get("/games", response_model=list[GameRead])
 async def get_games(
-    finished: Optional[bool] = Query(None),  # Optional query parameter for finished status
+    finished: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
-    # Query games with tournament information
-    query = db.query(
-        Game,
-        Tournament.name.label("tournament_name"),
-        Tournament.id.label("tournament_id"),
-        Tournament.logo.label("tournament_logo"),
-    ).join(Tournament, Game.tournament_id == Tournament.id)
+    query = db.query(Game).options(
+        joinedload(Game.tournament),
+        joinedload(Game.team1_info),
+        joinedload(Game.team2_info),
+        joinedload(Game.bets)
+    )
 
     if finished is not None:
         query = query.filter(Game.finished == finished)
 
     games = query.all()
     result = []
-    for game, tournament_name, tournament_id, tournament_logo in games:
-        game_data = GameRead.from_orm(game)
-        game_data.tournament_name = tournament_name
+    for game in games:
+        game_data = GameRead.model_validate(game)
+        game_data.tournament_name = game.tournament.name
+        game_data.tournament_id = game.tournament.id
+        game_data.tournament_logo = game.tournament.logo
+        game_data.team1_emblem = game.team1_info.emblem if game.team1_info else None
+        game_data.team2_emblem = game.team2_info.emblem if game.team2_info else None
 
-        # Обогащаем каждую ставку информацией о игре и турнире
         enriched_bets = []
         for bet in game.bets:
-            bet_data = BetRead.from_orm(bet)
+            bet_data = BetRead.model_validate(bet)
             bet_data.start_time = game.start_time
             bet_data.team1 = game.team1
             bet_data.team2 = game.team2
-            bet_data.tournament_name = tournament_name
-            bet_data.tournament_id = tournament_id
-            bet_data.logo = tournament_logo
-
+            bet_data.tournament_name = game.tournament.name
+            bet_data.tournament_id = game.tournament.id
+            bet_data.logo = game.tournament.logo
             enriched_bets.append(bet_data)
 
-        game_data.bets = enriched_bets  # Добавляем обогащенные ставки в game_data
-
+        game_data.bets = enriched_bets
         result.append(game_data)
 
     return result

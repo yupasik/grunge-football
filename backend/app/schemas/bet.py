@@ -23,6 +23,10 @@ class BetCreate(BetBase):
 
 class BetRead(BetBase):
     id: int
+    game_id: int
+    team1_score: int
+    team2_score: int
+    hidden: bool
     finished: bool
     owner_id: int
     owner_name: str
@@ -31,7 +35,7 @@ class BetRead(BetBase):
     team2: Optional[str] = ""
     tournament_name: Optional[str] = ""
     tournament_id: Optional[int] = None
-    start_time: Optional[datetime] = ""
+    start_time: Optional[datetime] = None
     logo: Optional[str] = ""
     actual_team1_score: Optional[int] = None
     actual_team2_score: Optional[int] = None
