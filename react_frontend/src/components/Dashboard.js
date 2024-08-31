@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { format, parseISO, addHours, isBefore, compareAsc } from "date-fns";
 import axios from "axios";
 import "./Dashboard.css";
+import {Link} from "react-router-dom";
 
 const API_URL = process.env.REACT_APP_API_URL || "/api";
 const MOSCOW_TIMEZONE_OFFSET = 3; // Moscow is UTC+3
@@ -907,46 +908,49 @@ const Dashboard = () => {
     <div className="container">
       <div className="header-container">
         <h1>ADMIN DASHBOARD</h1>
-        <a href="/" className="back-button">
-          BACK TO MAIN
-        </a>
+        <br/>
+        <div>
+          <a href="/" className="back-button">BACK TO MAIN</a>
+          <a href="/account" className="back-button">MY ACCOUNT</a>
+        </div>
       </div>
 
       <div className="tab-container">
         <button
-            className={`tab-button ${activeTab === "games" ? "active" : ""}`}
-            onClick={() => setActiveTab("games")}
+          className={`tab-button ${activeTab === "games" ? "active" : ""}`}
+          onClick={() => setActiveTab("games")}
         >
           Games
         </button>
         <button
-            className={`tab-button ${activeTab === "tournaments" ? "active" : ""}`}
-            onClick={() => setActiveTab("tournaments")}
+          className={`tab-button ${activeTab === "tournaments" ? "active" : ""}`}
+          onClick={() => setActiveTab("tournaments")}
         >
           Tournaments
         </button>
         <button
-            className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`}
-            onClick={() => setActiveTab('teams')}
+          className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`}
+          onClick={() => setActiveTab('teams')}
         >
           Teams
         </button>
         <button
-            className={`tab-button ${activeTab === "matches" ? "active" : ""}`}
-            onClick={() => setActiveTab("matches")}
+          className={`tab-button ${activeTab === "matches" ? "active" : ""}`}
+          onClick={() => setActiveTab("matches")}
         >
           Matches
         </button>
         <button
-            className={`tab-button ${activeTab === "users" ? "active" : ""}`}
-            onClick={() => setActiveTab("users")}
+          className={`tab-button ${activeTab === "users" ? "active" : ""}`}
+          onClick={() => setActiveTab("users")}
         >
           Users
         </button>
       </div>
 
-      {activeTab === "games" && <GamesManagement/>}
-      {activeTab === "tournaments" && <TournamentsManagement/>}
+      {/* Содержимое активной вкладки */}
+      {activeTab === "games" && <GamesManagement />}
+      {activeTab === "tournaments" && <TournamentsManagement />}
       {activeTab === "teams" && <TeamsManagement />}
       {activeTab === "matches" && <MatchesManagement />}
       {activeTab === "users" && <UsersManagement />}
