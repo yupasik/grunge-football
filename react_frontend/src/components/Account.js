@@ -423,10 +423,11 @@ const Account = () => {
     <div className="container">
       <div className="header-container">
         <h1>MY ACCOUNT</h1>
+        <br/>
         <div>
           <a href="/" className="back-button">BACK TO MAIN</a>
           {!isAuthenticated && (
-            <Link to="/signin" className="login-button">LOGIN</Link>
+              <Link to="/signin" className="login-button">LOGIN</Link>
           )}
           {profile.is_admin && <a href="/dashboard" className="admin-button">ADMIN</a>}
         </div>
