@@ -917,39 +917,40 @@ const Dashboard = () => {
 
       <div className="tab-container">
         <button
-            className={`tab-button ${activeTab === "games" ? "active" : ""}`}
-            onClick={() => setActiveTab("games")}
+          className={`tab-button ${activeTab === "games" ? "active" : ""}`}
+          onClick={() => setActiveTab("games")}
         >
           Games
         </button>
         <button
-            className={`tab-button ${activeTab === "tournaments" ? "active" : ""}`}
-            onClick={() => setActiveTab("tournaments")}
+          className={`tab-button ${activeTab === "tournaments" ? "active" : ""}`}
+          onClick={() => setActiveTab("tournaments")}
         >
           Tournaments
         </button>
         <button
-            className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`}
-            onClick={() => setActiveTab('teams')}
+          className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`}
+          onClick={() => setActiveTab('teams')}
         >
           Teams
         </button>
         <button
-            className={`tab-button ${activeTab === "matches" ? "active" : ""}`}
-            onClick={() => setActiveTab("matches")}
+          className={`tab-button ${activeTab === "matches" ? "active" : ""}`}
+          onClick={() => setActiveTab("matches")}
         >
           Matches
         </button>
         <button
-            className={`tab-button ${activeTab === "users" ? "active" : ""}`}
-            onClick={() => setActiveTab("users")}
+          className={`tab-button ${activeTab === "users" ? "active" : ""}`}
+          onClick={() => setActiveTab("users")}
         >
           Users
         </button>
       </div>
 
-      {activeTab === "games" && <GamesManagement/>}
-      {activeTab === "tournaments" && <TournamentsManagement/>}
+      {/* Содержимое активной вкладки */}
+      {activeTab === "games" && <GamesManagement />}
+      {activeTab === "tournaments" && <TournamentsManagement />}
       {activeTab === "teams" && <TeamsManagement />}
       {activeTab === "matches" && <MatchesManagement />}
       {activeTab === "users" && <UsersManagement />}

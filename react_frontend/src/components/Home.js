@@ -283,11 +283,11 @@ function Home() {
                 <h1>FOOTBALL PREDICTIONS</h1>
                 <div className="auth-buttons">
                     {isAuthenticated ? (
-                        <Link to="/account" className="account-button">MY ACCOUNT</Link>
+                        <Link to="/account" className="back-button">MY ACCOUNT</Link>
                     ) : (
                         <>
-                        <Link to="/signin" className="login-button">LOGIN</Link>
-                            <Link to="/signup" className="login-button">REGISTER</Link>
+                        <Link to="/signin" className="back-button">LOGIN</Link>
+                            <Link to="/signup" className="back-button">REGISTER</Link>
                         </>
                     )}
                 </div>
