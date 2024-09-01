@@ -8,6 +8,8 @@ class GameBase(BaseModel):
     title: Optional[str] = None
     team1: Optional[str] = None
     team2: Optional[str] = None
+    team1_emblem: Optional[str] = None
+    team2_emblem: Optional[str] = None
     start_time: Optional[datetime] = None
     tournament_id: int
     tournament_name: Optional[str] = ""
