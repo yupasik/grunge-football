@@ -30,6 +30,7 @@ async def create_game(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     tournament = db.query(Tournament).filter(Tournament.id == game.tournament_id, Tournament.finished == False).first()
+
     if not tournament:
         raise HTTPException(status_code=400, detail="Tournament must be open to add games")
 
@@ -40,34 +41,48 @@ async def create_game(
 
         game_data = await football_api.get_match(match_id=game.data_id)
         if game_data:
-
             # Use API data to populate game details
             team1_id = game_data["homeTeam"]["id"]
             team2_id = game_data["awayTeam"]["id"]
 
             # Fetch teams from the database by their data_id
-            for team_id in [team1_id, team2_id]:
-                print(team_id)
+            for i, team_id in enumerate([team1_id, team2_id]):
                 db_team = db.query(Team).filter(Team.data_id == team_id).first()
                 if not db_team:
                     team_data = await football_api.get_team_info(team_id=team_id)
-                    team = TeamCreate(
-                        data_id=team_id,
-                        name=team_data["name"].rstrip(" FC"),
-                        emblem=team_data["crest"],
-                        area=AreaRead(
-                            id=team_data["area"]["id"],
-                            name=team_data["area"]["name"],
-                            code=team_data["area"]["code"],
-                            flag=team_data["area"]["flag"],
-                        ),
-                    )
-                    create_team(db, team)
+                    if team_data:
+                        team = TeamCreate(
+                            data_id=team_id,
+                            name=team_data["name"].rstrip(" FC"),
+                            emblem=team_data["crest"],
+                            area=AreaRead(
+                                id=team_data["area"]["id"],
+                                name=team_data["area"]["name"],
+                                code=team_data["area"]["code"],
+                                flag=team_data["area"]["flag"],
+                            ),
+                        )
+                        db_team = create_team(db, team)
+                    else:
+                        if i == 0:
+                            team_name = game_data["homeTeam"]["name"].rstrip(" FC")
+                            team_emblem = game_data["homeTeam"]["crest"]
+                        else:
+                            team_name = game_data["awayTeam"]["name"].rstrip(" FC")
+                            team_emblem = game_data["awayTeam"]["crest"]
+                        team = TeamCreate(
+                            data_id=team_id,
+                            name=team_name,
+                            emblem=team_emblem,
+                        )
+                        db_team = create_team(db, team)
+                if team_id not in [t.data_id for t in tournament.teams]:
+                    tournament.teams.append(db_team)
 
             new_game = Game(
                 data_id=game.data_id,
                 tournament_id=game.tournament_id,
-                title=f"Matchday: {game_data['matchday']}",
+                title=f"{game_data['stage']} - Matchday: {game_data['matchday']}",
                 team1=game_data["homeTeam"]["name"].rstrip(" FC"),
                 team1_id=team1_id,
                 start_time=datetime.strptime(game_data["utcDate"], "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=3),
@@ -85,7 +100,6 @@ async def create_game(
                 finished=False,
             )
     else:
-
         new_game = Game(
             tournament_id=game.tournament_id,
             title=game.title,
@@ -193,6 +207,7 @@ async def delete_game(
     # Now delete the game
     db.delete(db_game)
     db.commit()
+    return db_game
 
 
 @router.post("/games/finish", response_model=GameRead)
