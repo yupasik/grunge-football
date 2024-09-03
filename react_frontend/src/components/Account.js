@@ -155,11 +155,37 @@ const Account = () => {
     const filtered = allBets.filter(bet => bet.finished && bet.tournament_id === selectedTournament);
     setFilteredBets(filtered);
   };
+  //
+  // const filterUpcomingPredictions = () => {
+  //   let filteredGames = selectedUpcomingTournament
+  //     ? upcomingGames.filter(game => game.tournament_id === selectedUpcomingTournament)
+  //     : upcomingGames;
+  //
+  //   if (titleFilter) {
+  //     filteredGames = filteredGames.filter(game => game.title === titleFilter);
+  //   }
+  //
+  //   const allGames = [...filteredGames];
+  //
+  //   upcomingPredictions.forEach(bet => {
+  //     const gameIndex = allGames.findIndex(game => game.id === bet.game_id);
+  //     if (gameIndex !== -1) {
+  //       allGames[gameIndex] = { ...allGames[gameIndex], bet };
+  //     } else if (!selectedUpcomingTournament || bet.tournament_id === selectedUpcomingTournament) {
+  //       allGames.push({ ...bet, id: bet.game_id });
+  //     }
+  //   });
+  //
+  //   return allGames;
+  // };
 
-  const filterUpcomingPredictions = () => {
-    let filteredGames = selectedUpcomingTournament
-      ? upcomingGames.filter(game => game.tournament_id === selectedUpcomingTournament)
-      : upcomingGames;
+
+    const filterUpcomingPredictions = () => {
+    let filteredGames = upcomingGames;
+
+    if (selectedUpcomingTournament) {
+      filteredGames = filteredGames.filter(game => game.tournament_id === selectedUpcomingTournament);
+    }
 
     if (titleFilter) {
       filteredGames = filteredGames.filter(game => game.title === titleFilter);

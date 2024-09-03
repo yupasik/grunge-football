@@ -137,13 +137,13 @@ async def get_user_bets(current_user: User = Depends(get_current_user), db: Sess
         Tournament.logo.label("logo"),
         Tournament.id.label("tournament_id"),
         Game.team1_id.label("team1_id"),
-        Game.team2_id.label("team2_id"),
-        Team.emblem.label("team1_emblem"),
-        Team.emblem.label("team2_emblem")
+        Game.team2_id.label("team2_id")
     ).all()
 
     enriched_bets = []
-    for bet, team1, team2, title, team1_score, team2_score, start_time, tournament_name, logo, tournament_id, team1_id, team2_id, team1_emblem, team2_emblem in bets:
+    for bet, team1, team2, title, team1_score, team2_score, start_time, tournament_name, logo, tournament_id, team1_id, team2_id, in bets:
+        team1_emblem = db.query(Team.emblem).filter(Team.data_id == team1_id).scalar()
+        team2_emblem = db.query(Team.emblem).filter(Team.data_id == team2_id).scalar()
 
         # Enrich the Bet object with additional details
         bet.team1 = team1
