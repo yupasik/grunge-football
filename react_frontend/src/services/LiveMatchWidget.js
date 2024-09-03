@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import MatchPopup from './MatchPopup';
 
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const LiveMatchWidget = ({ matchId }) => {
   const [matchData, setMatchData] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const fetchMatchData = async () => {
@@ -25,24 +27,20 @@ const LiveMatchWidget = ({ matchId }) => {
   if (!matchData) return <div>Loading...</div>;
 
   return (
-    <div className="live-match-widget">
-      <h3>Live Match</h3>
-      <div className="teams">
-        <span>{matchData.homeTeam.name}</span>
-        <span>{matchData.score.fullTime.home} - {matchData.score.fullTime.away}</span>
-        <span>{matchData.awayTeam.name}</span>
+    <>
+      <div className="live-match-widget" onClick={() => setShowPopup(true)}>
+        <h3>{matchData.homeTeam.shortName} vs {matchData.awayTeam.shortName}</h3>
+        <div className="match-score">
+          {matchData.score.fullTime.home} - {matchData.score.fullTime.away}
+        </div>
+        <div className="match-time">
+          {matchData.minute}'
+        </div>
       </div>
-      <div className="match-info">
-        <p>Minute: {matchData.minute}'</p>
-        <p>Venue: {matchData.venue}</p>
-      </div>
-      <div className="recent-events">
-        <h4>Recent Events</h4>
-        {matchData.goals.slice(-3).reverse().map((goal, index) => (
-          <p key={index}>{goal.minute}' Goal: {goal.scorer.name} ({goal.team.name})</p>
-        ))}
-      </div>
-    </div>
+      {showPopup && (
+        <MatchPopup matchData={matchData} onClose={() => setShowPopup(false)} />
+      )}
+    </>
   );
 };
 

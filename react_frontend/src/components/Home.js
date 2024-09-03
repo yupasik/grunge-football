@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 import { isBefore, parseISO } from "date-fns";
+import MatchPopup from '../services/MatchPopup';
 
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 const SORT_BY_POINTS = 'SORT BY POINTS';
@@ -23,6 +24,8 @@ function Home() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showFinished, setShowFinished] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [selectedMatch, setSelectedMatch] = useState(null);
+    const [isPopupVisible, setIsPopupVisible] = useState(false);
 
     useEffect(() => {
         fetchTournaments();
@@ -165,6 +168,16 @@ function Home() {
     //     [tournaments]
     // );
 
+    const handleMatchClick = async (matchId) => {
+        try {
+            const response = await axios.get(`${API_URL}/data/matches/${matchId}`);
+            setSelectedMatch(response.data);
+            setIsPopupVisible(true);
+        } catch (error) {
+            console.error('Error fetching match data:', error);
+        }
+    };
+
     const renderPredictionsTable = () => {
         if (!tournamentData || !tournamentData.games) return null;
 
@@ -198,7 +211,9 @@ function Home() {
                                 const gameStarted = isGameStarted(game);
                                 return (
                                     <tr key={game.id}
-                                        className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}>
+                                        className={gameStarted ? 'current-match' : (!game.finished ? 'future-match' : '')}
+                                        onClick={() => handleMatchClick(game.data_id)}
+                                    >
                                         <td data-label="DATE & TIME">{formatDateTime(game.start_time)}</td>
                                         <td data-label="GAME">
                                             <div className="game-container">
@@ -364,6 +379,12 @@ function Home() {
                     <li><strong>GOOD LUCK 🤘</strong></li>
                 </ul>
             </div>
+            {isPopupVisible && selectedMatch && (
+                <MatchPopup
+                    matchData={selectedMatch}
+                    onClose={() => setIsPopupVisible(false)}
+                />
+            )}
         </div>
     );
 }
