@@ -218,7 +218,7 @@ font-size: 21px;
 }
 
 
-.tournament-account-select {
+.tournament-account-select, .title-filter-select {
     margin-top: 20px;
     padding: 8px 15px;
     background-color: #ff3333;

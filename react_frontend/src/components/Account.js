@@ -140,6 +140,11 @@ const Account = () => {
     setTitleFilter(e.target.value);
   };
 
+  const getUniqueTitles = () => {
+    const allTitles = upcomingGames.map(game => game.title).filter(Boolean);
+    return ['', ...new Set(allTitles)];
+  };
+
   const getOrdinal = (n) => {
     const s = ["th", "st", "nd", "rd"];
     const v = n % 100;
@@ -150,38 +155,6 @@ const Account = () => {
     const filtered = allBets.filter(bet => bet.finished && bet.tournament_id === selectedTournament);
     setFilteredBets(filtered);
   };
-  //
-  // const filterUpcomingPredictions = () => {
-  //   if (!selectedUpcomingTournament) {
-  //     // Для "All Tournaments" создаем уникальный список игр
-  //     const allGames = [...upcomingGames];
-  //     upcomingPredictions.forEach(bet => {
-  //       const gameIndex = allGames.findIndex(game => game.id === bet.game_id);
-  //       if (gameIndex !== -1) {
-  //         allGames[gameIndex] = { ...allGames[gameIndex], bet };
-  //       } else {
-  //         allGames.push({ ...bet, id: bet.game_id });
-  //       }
-  //     });
-  //     return allGames;
-  //   }
-  //
-  //   const filteredPredictions = upcomingPredictions.filter(bet => bet.tournament_id === selectedUpcomingTournament);
-  //   const filteredGames = upcomingGames.filter(game => game.tournament_id === selectedUpcomingTournament);
-  //
-  //   const allGames = [...filteredGames];
-  //
-  //   filteredPredictions.forEach(bet => {
-  //     const gameIndex = allGames.findIndex(game => game.id === bet.game_id);
-  //     if (gameIndex !== -1) {
-  //       allGames[gameIndex] = { ...allGames[gameIndex], bet };
-  //     } else {
-  //       allGames.push({ ...bet, id: bet.game_id });
-  //     }
-  //   });
-  //
-  //   return allGames;
-  // };
 
   const filterUpcomingPredictions = () => {
     let filteredGames = selectedUpcomingTournament
@@ -189,9 +162,7 @@ const Account = () => {
       : upcomingGames;
 
     if (titleFilter) {
-      filteredGames = filteredGames.filter(game =>
-        game.title && game.title.toLowerCase().includes(titleFilter.toLowerCase())
-      );
+      filteredGames = filteredGames.filter(game => game.title === titleFilter);
     }
 
     const allGames = [...filteredGames];
@@ -500,13 +471,17 @@ const Account = () => {
               <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
           ))}
         </select>
-        <input
-            type="text"
-            placeholder="Filter by game title"
-            value={titleFilter}
+        <select
+            id="title-filter-select"
+            className="title-filter-select"
             onChange={handleTitleFilterChange}
-            className="title-filter-input"
-        />
+            value={titleFilter}
+        >
+          <option value="">All Games</option>
+          {getUniqueTitles().map((title, index) => (
+              <option key={index} value={title}>{title || "Unnamed Game"}</option>
+          ))}
+        </select>
         <div className="predictions-grid">
           {sortPredictions(filterUpcomingPredictions()).map(item =>
               renderPredictionCard(item)
