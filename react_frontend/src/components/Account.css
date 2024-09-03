@@ -76,7 +76,7 @@ h1, h2, h3 {
 }
 
 .predictions-grid {
-    margin-top: 45px;
+    margin-top: 25px;
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -87,15 +87,16 @@ h1, h2, h3 {
     background-color: #222;
     border: 2px solid #444;
     justify-content: center;
-    padding: 20px;
     width: 100%;
+    padding-left: 20px;
+    padding-right: 20px;
     max-width: 300px;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
     text-align: center;
 }
 .tournament-name {
   color: #ff3333;
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 15px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   text-transform: uppercase;
@@ -108,10 +109,36 @@ h1, h2, h3 {
   height: 50px;
 }
 
-.team {
-  font-size: 17px;
+.team-account {
+  font-size: 12px;
   color: #ddd;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-name-account {
+  min-height: 2.4em;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  word-break: break-word;
+}
+
+.game-title {
+  font-size: 0.9em;
+  color: #ddd;
+}
+
+.title-filter-input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #333;
+  border: 1px solid #555;
+  color: #ddd;
 }
 
 .vs {
@@ -126,7 +153,7 @@ font-size: 21px;
   justify-content: center;
 }
 
-.prediction-card .team {
+.prediction-card .team-account {
   flex: 1;
   text-align: center;
 }
@@ -151,7 +178,7 @@ font-size: 21px;
 }
 .game-date {
     color: #ddd;
-    font-size: 14px;
+    font-size: 12px;
     text-shadow: 0 0 5px rgba(255, 240, 240, 0.6);
     font-weight: normal;
 }
@@ -191,7 +218,7 @@ font-size: 21px;
 }
 
 
-.tournament-account-select {
+.tournament-account-select, .title-filter-select {
     margin-top: 20px;
     padding: 8px 15px;
     background-color: #ff3333;
@@ -647,8 +674,8 @@ font-size: 21px;
         font-size: 14px;
     }
 
-    .team {
-        font-size: 14px;
+    .team-account {
+        font-size: 12px;
     }
 
     .score-input {
@@ -668,7 +695,7 @@ font-size: 21px;
         font-size: 12px;
     }
 
-    .team {
+    .team-account {
         font-size: 12px;
     }
 
@@ -735,7 +762,7 @@ font-size: 21px;
     padding: 0.5rem;
   }
 
-  .team {
+  .team-account {
     font-size: 0.8rem;
   }
 
@@ -752,4 +779,11 @@ font-size: 21px;
   .history-table, .tournaments-stats-table {
     font-size: 0.7rem;
   }
+}
+
+.team-emblem-account {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  margin-right: 5px;
 }

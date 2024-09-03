@@ -23,6 +23,7 @@ const Account = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [errors, setErrors] = useState({});
   const [hiddenBets, setHiddenBets] = useState({});
+  const [titleFilter, setTitleFilter] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -135,6 +136,15 @@ const Account = () => {
     });
   };
 
+  const handleTitleFilterChange = (e) => {
+    setTitleFilter(e.target.value);
+  };
+
+  const getUniqueTitles = () => {
+    const allTitles = upcomingGames.map(game => game.title).filter(Boolean);
+    return ['', ...new Set(allTitles)];
+  };
+
   const getOrdinal = (n) => {
     const s = ["th", "st", "nd", "rd"];
     const v = n % 100;
@@ -147,30 +157,21 @@ const Account = () => {
   };
 
   const filterUpcomingPredictions = () => {
-    if (!selectedUpcomingTournament) {
-      // Для "All Tournaments" создаем уникальный список игр
-      const allGames = [...upcomingGames];
-      upcomingPredictions.forEach(bet => {
-        const gameIndex = allGames.findIndex(game => game.id === bet.game_id);
-        if (gameIndex !== -1) {
-          allGames[gameIndex] = { ...allGames[gameIndex], bet };
-        } else {
-          allGames.push({ ...bet, id: bet.game_id });
-        }
-      });
-      return allGames;
-    }
+    let filteredGames = selectedUpcomingTournament
+      ? upcomingGames.filter(game => game.tournament_id === selectedUpcomingTournament)
+      : upcomingGames;
 
-    const filteredPredictions = upcomingPredictions.filter(bet => bet.tournament_id === selectedUpcomingTournament);
-    const filteredGames = upcomingGames.filter(game => game.tournament_id === selectedUpcomingTournament);
+    if (titleFilter) {
+      filteredGames = filteredGames.filter(game => game.title === titleFilter);
+    }
 
     const allGames = [...filteredGames];
 
-    filteredPredictions.forEach(bet => {
+    upcomingPredictions.forEach(bet => {
       const gameIndex = allGames.findIndex(game => game.id === bet.game_id);
       if (gameIndex !== -1) {
         allGames[gameIndex] = { ...allGames[gameIndex], bet };
-      } else {
+      } else if (!selectedUpcomingTournament || bet.tournament_id === selectedUpcomingTournament) {
         allGames.push({ ...bet, id: bet.game_id });
       }
     });
@@ -320,7 +321,7 @@ const Account = () => {
   const renderPredictionCard = (item) => {
     const isPrediction = 'bet' in item;
     const cardClass = isPrediction ? 'bet-made' : 'no-bet';
-    const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id, hidden } = isPrediction ? item.bet : item;
+    const { id, tournament_name, start_time, team1, team2, team1_score, team2_score, game_id, hidden, title, team1_emblem, team2_emblem } = isPrediction ? item.bet : item;
     const gameStarted = isGameStarted(start_time);
     const cardId = isPrediction ? id : `game-${id}`;
     const isSubmitting = submittingBets[cardId];
@@ -357,14 +358,23 @@ const Account = () => {
       <div key={cardId} className={`prediction-card ${cardClass}`}>
         <h3 className="tournament-name">
           <span>{tournament_name}</span>
-          <br />
-          <br />
+          <br/>
+          <br/>
+          <span className="game-title">{title}</span>
+          <br/>
+          <br/>
           <span className="game-date">[ {formatDateTime(start_time)} ]</span>
         </h3>
         <div className="match-info">
-          <div className="team">{team1}</div>
+          <div className="team-account">
+            <div className="team-name-account">{team1}</div>
+            {team1_emblem && <img src={team1_emblem} alt={`${team1} emblem`} className="team-emblem-account" />}
+          </div>
           <span className="vs">vs</span>
-          <div className="team">{team2}</div>
+          <div className="team-account">
+            {team2_emblem && <img src={team2_emblem} alt={`${team2} emblem`} className="team-emblem-account" />}
+            <div className="team-name-account">{team2}</div>
+          </div>
         </div>
         <div className="prediction-input">
           <input
@@ -393,27 +403,21 @@ const Account = () => {
         <div className="prediction-actions">
           <div className="hidden-checkbox">
             <input
-                type="checkbox"
-                id={`hidden-${cardId}`}
-                defaultChecked={isPrediction ? hidden : true}
-                onChange={(e) => handleHiddenChange(cardId, e.target.checked)}
+              type="checkbox"
+              id={`hidden-${cardId}`}
+              defaultChecked={isPrediction ? hidden : true}
+              onChange={(e) => handleHiddenChange(cardId, e.target.checked)}
             />
             <label htmlFor={`hidden-${cardId}`}>hidden</label>
           </div>
           <button
-              id={`submit-button-${submissionId}`}
-              className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
-              onClick={handleSubmit}
-              disabled={isSubmitting || gameStarted}
+            id={`submit-button-${submissionId}`}
+            className={`submit-prediction ${gameStarted ? 'game-started' : ''}`}
+            onClick={handleSubmit}
+            disabled={isSubmitting || gameStarted}
           >
-              {getButtonText()}
+            {getButtonText()}
           </button>
-
-          {errors[submissionId] && (
-            <div className={`message ${errors[submissionId].includes('successfully') ? 'success' : 'error'}`} role="alert">
-              {errors[submissionId]}
-            </div>
-          )}
         </div>
       </div>
     );
@@ -465,6 +469,17 @@ const Account = () => {
           <option value="">All Tournaments</option>
           {tournaments.map(tournament => (
               <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
+          ))}
+        </select>
+        <select
+            id="title-filter-select"
+            className="title-filter-select"
+            onChange={handleTitleFilterChange}
+            value={titleFilter}
+        >
+          <option value="">All Games</option>
+          {getUniqueTitles().map((title, index) => (
+              <option key={index} value={title}>{title || "Unnamed Game"}</option>
           ))}
         </select>
         <div className="predictions-grid">

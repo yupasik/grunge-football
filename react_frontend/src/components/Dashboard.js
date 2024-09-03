@@ -54,7 +54,7 @@ const Dashboard = () => {
       setUsers(usersResponse.data);
       setTeams(teamsResponse.data);
       // Extract unique countries from teams
-      const uniqueCountries = [...new Set(teamsResponse.data.map(team => team.area.name))];
+      const uniqueCountries = [...new Set(teamsResponse.data.map(team => team.area ? team.area.name : "unknown"))];
       setCountries(uniqueCountries);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -437,7 +437,7 @@ const Dashboard = () => {
               <div key={team.id} className="team-card" onClick={() => handleTeamClick(team)}>
                 <img src={team.emblem} alt={team.name} className="team-emblem"/>
                 <h3>{team.name}</h3>
-                <p>{team.area.name}</p>
+                <p>{team.area ? team.area.name : "unknown"}</p>
                 <p className="team-tournaments">
                   Tournaments: {team.tournaments.length > 0
                     ? team.tournaments.join(', ')

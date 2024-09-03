@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.team import TeamCreate, TeamUpdate, TeamRead, Area
+from app.schemas.team import TeamCreate, TeamUpdate, TeamRead, Area, AreaRead
 from app.api.crud.team import create_team, get_team, get_teams, update_team, delete_team
 from app.football_data.api import FootballDataAPI, get_football_data_api
 from app.core.security import get_current_user
@@ -30,8 +30,8 @@ async def create_new_team(
         team = TeamCreate(
             data_id=team.data_id,
             name=team_data["name"].rstrip(" FC"),
-            emblem=team_data["crest"],
-            area=Area(
+            emblem=team_data["crest"] or team.emblem,
+            area=AreaRead(
                 id=team_data["area"]["id"],
                 name=team_data["area"]["name"],
                 code=team_data["area"]["code"],
@@ -129,8 +129,8 @@ async def update_existing_team(
             id=team_id,
             data_id=team.data_id,
             name=team_data["name"].rstrip(" FC"),
-            emblem=team_data["crest"],
-            area=Area(
+            emblem=team_data["crest"] or team.emblem,
+            area=AreaRead(
                 id=team_data["area"]["id"],
                 name=team_data["area"]["name"],
                 code=team_data["area"]["code"],

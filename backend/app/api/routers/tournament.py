@@ -282,7 +282,7 @@ async def update_tournament(
                 data_id=tournament.data_id,
                 season_id=season_id,
                 name=name,
-                logo=tournament_data.get("emblem"),
+                logo=tournament_data.get("emblem") or tournament.logo,
             )
         else:
             if tournament.name is None or tournament.logo is None:
