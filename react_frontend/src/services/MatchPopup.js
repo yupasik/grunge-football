@@ -30,7 +30,7 @@ const MatchPopup = ({ matchData, onClose }) => {
           </div>
           <div className="score">
             <span className="score-value">{matchData.score.fullTime.home}</span>
-            <span className="score-separator">-</span>
+            <span className="score-separator"> - </span>
             <span className="score-value">{matchData.score.fullTime.away}</span>
           </div>
           <div className="team-popup away-team">

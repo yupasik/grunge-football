@@ -134,7 +134,7 @@
     font-size: 0.9rem;
   }
 
-  .score {
+  .score, .score-separator {
     font-size: 28px;
   }
 }

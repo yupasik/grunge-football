@@ -33,12 +33,16 @@ class BetRead(BetBase):
     points: int
     team1: Optional[str] = ""
     team2: Optional[str] = ""
+    team1_emblem: Optional[str] = ""
+    team2_emblem: Optional[str] = ""
+    title: Optional[str] = ""
     tournament_name: Optional[str] = ""
     tournament_id: Optional[int] = None
     start_time: Optional[datetime] = None
     logo: Optional[str] = ""
     actual_team1_score: Optional[int] = None
     actual_team2_score: Optional[int] = None
+    tournament_logo: Optional[str] = None
 
     class Config:
         from_attributes = True

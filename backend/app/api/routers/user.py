@@ -4,6 +4,7 @@ from app.db.database import get_db
 from app.models.user import User
 from app.models.bet import Bet
 from app.models.game import Game
+from app.models.team import Team
 from app.models.tournament import Tournament
 from app.schemas.user import UserCreate, UserInDB, UserSignIn, Token, UserUpdate
 from app.schemas.bet import BetRead
@@ -128,24 +129,34 @@ async def get_user_bets(current_user: User = Depends(get_current_user), db: Sess
         Bet,
         Game.team1.label("team1"),
         Game.team2.label("team2"),
+        Game.title.label("title"),
         Game.team1_score.label("team1_score"),
         Game.team2_score.label("team2_score"),
         Game.start_time.label("start_time"),
         Tournament.name.label("tournament_name"),
         Tournament.logo.label("logo"),
         Tournament.id.label("tournament_id"),
+        Game.team1_id.label("team1_id"),
+        Game.team2_id.label("team2_id"),
+        Team.emblem.label("team1_emblem"),
+        Team.emblem.label("team2_emblem")
     ).all()
 
     enriched_bets = []
-    for bet, team1, team2, team1_score, team2_score, start_time, tournament_name, logo, tournament_id in bets:
+    for bet, team1, team2, title, team1_score, team2_score, start_time, tournament_name, logo, tournament_id, team1_id, team2_id, team1_emblem, team2_emblem in bets:
+
+        # Enrich the Bet object with additional details
         bet.team1 = team1
         bet.team2 = team2
+        bet.title = title
         bet.actual_team1_score = team1_score
         bet.actual_team2_score = team2_score
         bet.start_time = str(start_time)
         bet.tournament_name = tournament_name
         bet.logo = logo
         bet.tournament_id = tournament_id
+        bet.team1_emblem = team1_emblem
+        bet.team2_emblem = team2_emblem
         enriched_bets.append(bet)
 
     return enriched_bets
