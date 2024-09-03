@@ -477,7 +477,7 @@ const Account = () => {
             onChange={handleTitleFilterChange}
             value={titleFilter}
         >
-          <option value="">All Games</option>
+          <option value="">All Stages</option>
           {getUniqueTitles().map((title, index) => (
               <option key={index} value={title}>{title || "Unnamed Game"}</option>
           ))}

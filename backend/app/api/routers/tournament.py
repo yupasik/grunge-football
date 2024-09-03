@@ -156,10 +156,8 @@ async def get_tournaments(
     for tournament in tournaments:
         tournament_data = TournamentRead.model_validate(tournament)
 
-        # Создаем словарь для быстрого доступа к эмблемам команд
         team_emblems = {team.data_id: team.emblem for team in tournament.teams}
 
-        # Обновляем данные игр
         updated_games = []
         for game in tournament.games:
             game_data = GameRead.model_validate(game)
@@ -168,13 +166,13 @@ async def get_tournaments(
             game_data.tournament_name = tournament.name
             game_data.tournament_logo = tournament.logo
 
-            # Обновляем данные ставок
             updated_bets = []
             for bet in game.bets:
                 bet_data = BetRead.model_validate(bet)
                 bet_data.start_time = game.start_time
                 bet_data.team1 = game.team1
                 bet_data.team2 = game.team2
+                bet_data.title = game.title
                 bet_data.tournament_name = tournament.name
                 bet_data.tournament_id = tournament.id
                 bet_data.logo = tournament.logo
