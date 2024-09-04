@@ -21,7 +21,7 @@ class FootballDataAPI:
         self.api_key = api_key
         self.headers = {"X-Auth-Token": self.api_key}
         self.cache: Dict[str, Dict[str, Any]] = {}
-        self.cache_ttl = 3600
+        self.cache_ttl = 300
 
     async def _get_cache(self, key: str) -> Dict[str, Any] | None:
         if key in self.cache:
