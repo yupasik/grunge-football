@@ -51,6 +51,8 @@
 .league-table th {
   background-color: #333;
   color: #ff3333;
+  padding-left: 5px;
+  padding-right: 5px;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -196,7 +198,8 @@
 
 .season-info {
   background-color: #333;
-  padding: 15px;
+  padding: 5px;
+  padding-left: 20px;
   margin-bottom: 20px;
   border-radius: 5px;
   font-size: 14px;
@@ -224,8 +227,63 @@
   margin-right: 15px;
 }
 
+.tournament-logo-table {
+  background-color: #777777;
+}
+
 .tournament-header-table h2 {
   color: #ff3333;
   font-size: 24px;
   margin: 0;
 }
+
+.tabs-popup {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.tab-button-popup {
+  background-color: #333;
+  color: #ddd;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tab-button-popup.active {
+  background-color: #ff3333;
+  color: #fff;
+}
+
+.scorers-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #ddd;
+}
+
+.scorers-table th,
+.scorers-table td {
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: left;
+  border-bottom: 1px solid #444;
+}
+
+.scorers-table th {
+  background-color: #333;
+  color: #ff3333;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.scorers-table .team-crest {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* Добавьте медиа-запросы для адаптивности, если необходимо */

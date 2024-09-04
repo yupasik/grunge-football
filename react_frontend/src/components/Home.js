@@ -30,6 +30,7 @@ function Home() {
     const [isLeagueTableVisible, setIsLeagueTableVisible] = useState(false);
     const [seasonInfo, setSeasonInfo] = useState(null);
     const [tournamentInfo, setTournamentInfo] = useState(null);
+    const [scorersData, setScorersData] = useState(null);
 
     useEffect(() => {
         fetchTournaments();
@@ -44,17 +45,22 @@ function Home() {
 
     const fetchLeagueTableData = async (tournamentDataId) => {
         try {
-            const response = await axios.get(`${API_URL}/data/competitions/${tournamentDataId}/standings`);
-            setLeagueTableData(response.data.standings[0].table);
-            setSeasonInfo(response.data.season);
-            setIsLeagueTableVisible(true);
+            const [standingsResponse, scorersResponse] = await Promise.all([
+                axios.get(`${API_URL}/data/competitions/${tournamentDataId}/standings`),
+                axios.get(`${API_URL}/data/competitions/${tournamentDataId}/scores`)
+            ]);
+
+            setLeagueTableData(standingsResponse.data.standings[0].table);
+            setSeasonInfo(standingsResponse.data.season);
+            setScorersData(scorersResponse.data.scorers);
             setTournamentInfo({
-              name: tournamentData.name,
-              logo: tournamentData.logo
+                name: standingsResponse.data.competition.name,
+                logo: standingsResponse.data.competition.emblem
             });
+            setIsLeagueTableVisible(true);
         } catch (error) {
-            console.error('Error fetching league table data:', error);
-            setError('An error occurred while fetching league table data. Please try again.');
+            console.error('Error fetching league data:', error);
+            setError('An error occurred while fetching league data. Please try again.');
         }
     };
 
@@ -414,13 +420,14 @@ function Home() {
                     onClose={() => setIsPopupVisible(false)}
                 />
             )}
-            {isLeagueTableVisible && leagueTableData && seasonInfo && tournamentInfo && (
-              <LeagueTablePopup
-                standings={leagueTableData}
-                seasonInfo={seasonInfo}
-                tournamentInfo={tournamentInfo}
-                onClose={() => setIsLeagueTableVisible(false)}
-              />
+            {isLeagueTableVisible && leagueTableData && seasonInfo && tournamentInfo && scorersData && (
+                <LeagueTablePopup
+                    standings={leagueTableData}
+                    seasonInfo={seasonInfo}
+                    tournamentInfo={tournamentInfo}
+                    scorers={scorersData}
+                    onClose={() => setIsLeagueTableVisible(false)}
+                />
             )}
         </div>
     );
