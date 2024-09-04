@@ -26,6 +26,11 @@ async def get_games(competition_id: int, api: FootballDataAPI = Depends(get_foot
     return await api.get_matches(competition_id)
 
 
+@router.get("/competitions/{competition_id}/standings")
+async def get_standings(competition_id: int, api: FootballDataAPI = Depends(get_football_data_api)):
+    return await api.get_standings(competition_id)
+
+
 @router.get("/teams/{team_id}")
 async def get_team_info(team_id: int, api: FootballDataAPI = Depends(get_football_data_api)):
     return await api.get_team_info(team_id)

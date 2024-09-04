@@ -20,7 +20,6 @@ const MatchPopup = ({ matchData, onClose }) => {
   return (
     <div className="match-popup-overlay" onClick={onClose}>
       <div className="match-popup" onClick={e => e.stopPropagation()}>
-        {/*<button className="close-button" onClick={onClose}>&times;</button>*/}
         <div className="match-header">
           <div className="team-popup home-team">
             <div className="team-emblem-container">
