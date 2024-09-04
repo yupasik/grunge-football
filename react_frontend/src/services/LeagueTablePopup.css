@@ -1,0 +1,231 @@
+.league-table-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.league-table-popup {
+  background-color: #222;
+  border: 2px solid #ff3333;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.3);
+}
+
+.league-table-popup h2 {
+  color: #ff3333;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  text-transform: uppercase;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.league-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #ddd;
+  min-width: 600px;
+}
+
+.league-table th,
+.league-table td {
+  /*padding: 10px;*/
+  text-align: center;
+  border-bottom: 1px solid #444;
+}
+
+.league-table th {
+  background-color: #333;
+  color: #ff3333;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.league-table .team-name-table {
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+
+.league-table .team-crest {
+  width: 20px;
+  height: 15px;
+  margin-right: 10px;
+}
+
+.league-table .points {
+  font-weight: bold;
+  color: #ff3333;
+}
+
+.close-button-table {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  background-color: #ff3333;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  text-transform: uppercase;
+  transition: background-color 0.3s;
+}
+
+.close-button:hover {
+  background-color: #ff6666;
+}
+
+.league-table tbody tr {
+  transition: background-color 0.3s;
+    height: 15px;
+}
+
+.league-table tbody tr:hover {
+  background-color: #333;
+}
+
+.league-table tbody tr:nth-child(even) {
+  background-color: #2a2a2a;
+}
+
+.league-table tbody tr:nth-child(-n+4) td {
+  font-weight: bold;
+}
+
+.league-table tbody tr:nth-child(-n+4) td:first-child {
+  position: relative;
+}
+
+.league-table tbody tr:nth-child(-n+4) td:first-child::after {
+  content: '★';
+  position: absolute;
+  right: 5px;
+  color: gold;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #ddd;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 10px;
+}
+
+.legend-color {
+  width: 20px;
+  height: 15px;
+  margin-right: 5px;
+  border: 1px solid #444;
+}
+
+.legend-color.champions-league {
+  background-color: #4CAF50;
+}
+
+.legend-color.europa-league {
+  background-color: #2196F3;
+}
+
+.legend-color.relegation {
+  background-color: #F44336;
+}
+
+@media (max-width: 768px) {
+  .league-table-popup {
+    padding: 10px;
+  }
+
+  .league-table-popup h2 {
+    font-size: 20px;
+  }
+
+  .league-table th,
+  .league-table td {
+    padding: 5px;
+    font-size: 12px;
+  }
+
+  .league-table .team-crest {
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+  }
+
+  .team-short-name {
+    max-width: 60px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .legend {
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+
+  .legend-item {
+    margin: 5px;
+  }
+
+  .close-button-table {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+}
+
+.season-info {
+  background-color: #333;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.season-info p {
+  margin: 5px 0;
+}
+
+.season-info strong {
+  color: #ff3333;
+}
+
+.tournament-header-table {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.tournament-header-table .tournament-logo-table {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-right: 15px;
+}
+
+.tournament-header-table h2 {
+  color: #ff3333;
+  font-size: 24px;
+  margin: 0;
+}

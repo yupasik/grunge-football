@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import joinedload
@@ -13,6 +13,7 @@ from app.models.user import User
 from app.models.team import Team
 from app.models.tournament import Tournament
 from app.core.security import get_current_user
+from app.notifications.send import send_notifications
 from app.api.crud.team import create_team
 from app.football_data.api import FootballDataAPI, get_football_data_api
 
@@ -22,6 +23,7 @@ router = APIRouter()
 @router.post("/games", response_model=GameRead)
 async def create_game(
     game: GameCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     football_api: FootballDataAPI = Depends(get_football_data_api),
@@ -111,6 +113,9 @@ async def create_game(
     db.add(new_game)
     db.commit()
     db.refresh(new_game)
+
+    background_tasks.add_task(send_notifications, [(new_game, tournament.name)], [], db)
+
     return new_game
 
 

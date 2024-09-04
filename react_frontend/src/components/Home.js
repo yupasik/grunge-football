@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash';
-import PropTypes from 'prop-types';
+import LeagueTablePopup from '../services/LeagueTablePopup';
 import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 import { isBefore, parseISO } from "date-fns";
@@ -26,6 +26,10 @@ function Home() {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [selectedMatch, setSelectedMatch] = useState(null);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
+    const [leagueTableData, setLeagueTableData] = useState(null);
+    const [isLeagueTableVisible, setIsLeagueTableVisible] = useState(false);
+    const [seasonInfo, setSeasonInfo] = useState(null);
+    const [tournamentInfo, setTournamentInfo] = useState(null);
 
     useEffect(() => {
         fetchTournaments();
@@ -37,6 +41,22 @@ function Home() {
             fetchTournamentData(currentTournamentId);
         }
     }, [currentTournamentId]);
+
+    const fetchLeagueTableData = async (tournamentDataId) => {
+        try {
+            const response = await axios.get(`${API_URL}/data/competitions/${tournamentDataId}/standings`);
+            setLeagueTableData(response.data.standings[0].table);
+            setSeasonInfo(response.data.season);
+            setIsLeagueTableVisible(true);
+            setTournamentInfo({
+              name: tournamentData.name,
+              logo: tournamentData.logo
+            });
+        } catch (error) {
+            console.error('Error fetching league table data:', error);
+            setError('An error occurred while fetching league table data. Please try again.');
+        }
+    };
 
     const fetchTournaments = async () => {
         setIsLoading(true);
@@ -59,6 +79,8 @@ function Home() {
     const fetchTournamentData = async (tournamentId) => {
         setIsLoading(true);
         setError(null);
+        setLeagueTableData(null);  // Сброс данных турнирной таблицы
+        setIsLeagueTableVisible(false);  // Скрытие попапа с турнирной таблицей
         try {
             const response = await axios.get(`${API_URL}/tournaments/${tournamentId}`);
             setTournamentData(response.data);
@@ -357,6 +379,13 @@ function Home() {
                     </select>
                 </div>
                 <div className="button-container">
+                    <button
+                        className="sort-button"
+                        onClick={() => fetchLeagueTableData(tournamentData?.data_id)}
+                        disabled={!tournamentData?.data_id}
+                    >
+                        STATS
+                    </button>
                     <button className="sort-button" onClick={toggleSort}>
                         {isSortedByPoints ? SORT_ALPHABETICALLY : SORT_BY_POINTS}
                     </button>
@@ -384,6 +413,14 @@ function Home() {
                     matchData={selectedMatch}
                     onClose={() => setIsPopupVisible(false)}
                 />
+            )}
+            {isLeagueTableVisible && leagueTableData && seasonInfo && tournamentInfo && (
+              <LeagueTablePopup
+                standings={leagueTableData}
+                seasonInfo={seasonInfo}
+                tournamentInfo={tournamentInfo}
+                onClose={() => setIsLeagueTableVisible(false)}
+              />
             )}
         </div>
     );
