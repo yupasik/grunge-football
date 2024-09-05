@@ -142,3 +142,23 @@
     font-size: 28px;
   }
 }
+
+/*.event.substitution {*/
+/*  color: #4CAF50;*/
+/*}*/
+
+.event.substitution .event-out {
+  color: #ff3333;
+}
+
+.event.substitution .event-in {
+  color: #4CAF50;
+}
+
+
+.event-team-emblem {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
