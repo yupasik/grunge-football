@@ -17,6 +17,30 @@ const MatchPopup = ({ matchData, onClose }) => {
     return date.toLocaleString('en-GB', options) + ' MSK';
   };
 
+  const sortedEvents = [
+    ...matchData.goals.map(goal => ({
+      ...goal,
+      type: 'goal',
+      time: goal.minute
+    })),
+    ...matchData.bookings.map(booking => ({
+      ...booking,
+      type: 'booking',
+      time: booking.minute
+    })),
+    ...matchData.substitutions.map(sub => ({
+      ...sub,
+      type: 'substitution',
+      time: sub.minute
+    }))
+  ].sort((a, b) => a.time - b.time);
+
+  const getTeamEmblem = (teamId) => {
+    if (teamId === matchData.homeTeam.id) return matchData.homeTeam.crest;
+    if (teamId === matchData.awayTeam.id) return matchData.awayTeam.crest;
+    return null;
+  };
+
   return (
     <div className="match-popup-overlay" onClick={onClose}>
       <div className="match-popup" onClick={e => e.stopPropagation()}>
@@ -47,22 +71,42 @@ const MatchPopup = ({ matchData, onClose }) => {
         </div>
         <div className="match-events">
           <h3>MATCH EVENTS</h3>
-          {matchData.goals.map((goal, index) => (
-              <div key={`goal-${index}`} className="event goal">
-                <span className="event-time">{goal.minute}'</span>
-                <span className="event-description">
-                ⚽ Goal: {goal.scorer.name} ({goal.team.name})
-                  {goal.assist && <span className="assist"> - Assist: {goal.assist.name}</span>}
+          {sortedEvents.map((event, index) => (
+            <div key={`event-${index}`} className={`event ${event.type}`}>
+              <span className="event-time">{event.time}'</span>
+              <span className="event-description">
+                {event.type === 'goal' && (
+                  <>
+                    ⚽ Goal: {event.scorer.name}
+                    <span className="team-name">
+                      <img src={getTeamEmblem(event.team.id)} alt={event.team.name} className="event-team-emblem"/>
+                      {event.team.name}
+                    </span>
+                    {event.assist && <span className="assist"> - Assist: {event.assist.name}</span>}
+                  </>
+                )}
+                {event.type === 'booking' && (
+                  <>
+                    {event.card === 'YELLOW' ? '🟨' : '🟥'} {event.player.name}
+                    <span className="team-name">
+                      <img src={getTeamEmblem(event.team.id)} alt={event.team.name} className="event-team-emblem"/>
+                      {event.team.name}
+                    </span>
+                  </>
+                )}
+                {event.type === 'substitution' && (
+                  <>
+                    🔄 <span
+                        className="event-out">{event.playerOut.name}</span> ⬇️ <span
+                        className="event-in">{event.playerIn.name}</span> ⬆️
+                    <span className="team-name">
+                      <img src={getTeamEmblem(event.team.id)} alt={event.team.name} className="event-team-emblem"/>
+                      {event.team.name}
+                    </span>
+                  </>
+                )}
               </span>
-              </div>
-          ))}
-          {matchData.bookings.map((booking, index) => (
-              <div key={`booking-${index}`} className="event booking">
-                <span className="event-time">{booking.minute}'</span>
-                <span className="event-description">
-                {booking.card === 'YELLOW' ? '🟨' : '🟥'} {booking.player.name} ({booking.team.name})
-              </span>
-              </div>
+            </div>
           ))}
         </div>
       </div>
