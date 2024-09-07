@@ -95,13 +95,13 @@ const LeagueTablePopup = ({ standings, seasonInfo, tournamentInfo, scorers, onCl
                     <table className="league-table">
                         <thead>
                         <tr>
-                            <th>Position</th>
+                            <th>Rank</th>
                             <th>Team</th>
                             <th>Played</th>
                             <th>Won</th>
                             <th>Draw</th>
                             <th>Lost</th>
-                            <th>Goal Diff</th>
+                            <th>GoalsDiff</th>
                             <th>Points</th>
                         </tr>
                         </thead>
