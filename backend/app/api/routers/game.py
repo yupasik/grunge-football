@@ -16,6 +16,8 @@ from app.core.security import get_current_user
 from app.notifications.send import send_notifications
 from app.api.crud.team import create_team
 from app.football_data.api import FootballDataAPI, get_football_data_api
+from app.ai_bots.sonnet.sonnet_ai_bot import SonnetAIBot
+from app.ai_bots.openai.chatgpt_bot import ChatGPTBot
 
 router = APIRouter()
 
@@ -115,6 +117,10 @@ async def create_game(
     db.refresh(new_game)
 
     background_tasks.add_task(send_notifications, [(new_game, tournament.name)], [], db)
+
+    # Generate AI prediction
+    ai_bot = SonnetAIBot()
+    ai_bot.make_prediction(db, new_game.id)
 
     return new_game
 
@@ -265,3 +271,31 @@ async def finish_game(
 async def get_game_bets(game_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     bets = db.query(Bet).filter(Bet.game_id == game_id).all()
     return bets
+
+
+@router.post("/games/{game_id}/ai_prediction", response_model=BetRead)
+async def generate_ai_prediction(
+    game_id: int,
+    db: Session = Depends(get_db),
+    # current_user: User = Depends(get_current_user),
+):
+    # if not current_user.is_admin:
+    #     raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    game = db.query(Game).filter(Game.id == game_id).first()
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    if game.finished:
+        raise HTTPException(status_code=400, detail="Cannot make prediction for finished game")
+
+    sonnet_bot = SonnetAIBot()
+    # chatgpt_bot = ChatGPTBot()
+    # bet, explanation = ai_bot.make_prediction(db, game_id)
+    bet, explanation = sonnet_bot.make_prediction(db, game_id)
+
+    if bet:
+        bet_read = BetRead.model_validate(bet)
+        return bet_read
+    else:
+        raise HTTPException(status_code=500, detail="Failed to generate AI prediction")

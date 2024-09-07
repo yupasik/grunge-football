@@ -21,6 +21,16 @@ class DataConfig(BaseModel):
     token: SecretStr
 
 
+class SonnetConfig(BaseModel):
+    token: SecretStr
+    id: int
+
+
+class ChatGptConfig(BaseModel):
+    token: SecretStr
+    id: int
+
+
 class TelegramConfig(BaseModel):
     token: SecretStr
     channel_id: str
@@ -33,6 +43,8 @@ class Config(BaseSettings):
     mail: MailConfig
     telegram: TelegramConfig
     data: DataConfig
+    sonnet: SonnetConfig
+    chatgpt: ChatGptConfig
 
 
 def load_config(config_file: str = "config.yaml") -> Config:
