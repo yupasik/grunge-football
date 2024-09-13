@@ -211,7 +211,7 @@ select {
   align-items: center;
 }
 
-.tournament-name {
+.tournament-name-admin {
   flex-grow: 1;
   font-size: 1.2rem;
   color: var(--highlight-color);
@@ -233,12 +233,6 @@ select {
   padding: 1rem;
   justify-content: space-between;
   grid-template-columns: repeat(3, 1fr);
-}
-
-
-.tournament-name,
-.game-details {
-  flex-grow: 1;
 }
 
 
@@ -616,8 +610,9 @@ input:checked + .slider:before {
   color: #fff;
 }
 
-.team {
-  font-size: 0.6rem;
+.team-admin {
+  font-size: 1rem;
+  text-transform: uppercase;
   width: 140px;
   height: 55px;
   display: flex;
@@ -630,6 +625,12 @@ input:checked + .slider:before {
 .game-teams .vs {
   color: #ff3333;
   margin: 0 1px;
+}
+
+.game-teams {
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
 }
 
 .vs {
@@ -1104,27 +1105,13 @@ button:hover {
     border-bottom: 2px solid #444;
 }
 
-/* Стили для карточки игры */
-.game-teams {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.team {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 /* Медиа-запрос для мобильных устройств */
 @media (max-width: 768px) {
     .game-teams {
         flex-direction: row;
     }
 
-    .team {
+    .team-admin {
         font-size: 14px;
     }
 }

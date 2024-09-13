@@ -19,3 +19,9 @@ To install dependencies for Grunge Football using Poetry run:
 poetry install --sync
 ```
 
+### Launch
+
+```shell script
+docker-compose down && docker-compose up --build
+```
+
