@@ -1,6 +1,4 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
-from sqlalchemy.orm import Session
-from app.db.database import get_db
+from fastapi import APIRouter, Depends
 from app.football_data.api import FootballDataAPI, get_football_data_api
 
 router = APIRouter()

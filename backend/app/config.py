@@ -1,5 +1,6 @@
 import yaml
-from pydantic import BaseModel, EmailStr, SecretStr, HttpUrl
+from typing import Optional
+from pydantic import BaseModel, EmailStr, SecretStr
 from pydantic_settings import BaseSettings
 
 
@@ -24,6 +25,7 @@ class DataConfig(BaseModel):
 class SonnetConfig(BaseModel):
     token: SecretStr
     id: int
+    hidden: Optional[bool] = True
 
 
 class ChatGptConfig(BaseModel):
@@ -34,6 +36,7 @@ class ChatGptConfig(BaseModel):
 class TelegramConfig(BaseModel):
     token: SecretStr
     channel_id: str
+    notify: Optional[bool] = True
 
 class Config(BaseSettings):
     is_test: bool = False

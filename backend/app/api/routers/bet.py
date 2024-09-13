@@ -125,7 +125,7 @@ async def get_bets(
     game_id: Optional[int] = Query(None, description="Filter by game ID"),
     tournament_id: Optional[int] = Query(None, description="Filter by tournament ID"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
     # Explicitly define join conditions
     query = db.query(Bet) \

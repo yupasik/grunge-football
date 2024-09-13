@@ -4,7 +4,7 @@ from app.models.user import User
 from app.models.bet import Bet
 from app.models.game import Game
 from app.models.tournament import Tournament
-from .. import ANTHROPIC_API_KEY, SONNET_BOT_ID
+from .. import ANTHROPIC_API_KEY, SONNET_BOT_ID, HIDDEN
 import json
 
 
@@ -28,43 +28,24 @@ class SonnetAIBot:
         prompt += f"League: {game_info['league']}\n"
         prompt += f"Date: {game_info['date']}\n\n"
         prompt += """
-        with a strong emphasis on the emotional and psychological aspects:
-
-1. Team morale and confidence:
-   - Recent results and their impact on team spirit
-   - Public statements from players, coaches, and management
-   - Any off-field issues affecting the team's mindset
-
-2. Pressure and motivation:
-   - Stakes of the match (e.g., relegation battle, title race, derby)
-   - Historical significance of the fixture
-   - Individual player motivations (e.g., facing former team, contract negotiations)
-
-3. Team dynamics:
-   - Leadership on the field
-   - Chemistry between players
-   - Impact of any recent changes in the squad or coaching staff
-
-4. Psychological advantages:
-   - Home advantage and its current significance for {game_info['home_team']}
-   - Historical psychological edge in head-to-head matches
-   - "Bogey team" factor, if applicable
-
-5. Response to adversity:
-   - How teams have bounced back from defeats or setbacks
-   - Ability to handle high-pressure situations
-
-6. Tactical and physical factors:
-   - Recent form and playing style
-   - Key player availability and fitness
-   - Tactical matchups
-
-7. External influences:
-   - Fan expectations and their impact on player performance
-   - Media pressure and its effect on the teams
-   - Any other relevant external factors (e.g., weather, pitch conditions)
+        with a emphasis on the emotional and psychological aspects:
+        
+        1. Team morale and confidence:
+           - Recent results and their impact on team spirit
+           - Public statements from players, coaches, and management
+           - Any off-field issues affecting the team's mindset
+        
+        2. Pressure and motivation:
+           - Stakes of the match (e.g., relegation battle, title race, derby)
+           - Historical significance of the fixture
+           - Individual player motivations (e.g., facing former team, contract negotiations)
+        
+        3. Team dynamics:
+           - Leadership on the field
+           - Chemistry between players
+           - Impact of any recent changes in the squad or coaching staff\n
         """
-        prompt += "Please provide your prediction in in JSON format with the following structure: {'home_score': <predicted score for home team>,'away_score': <predicted score for away team>'.\n"
+        prompt += "Please provide your prediction ONLY in JSON format () with the following structure: {'home_score': <predicted score for home team>,'away_score': <predicted score for away team>'.\n"
         prompt += f"{AI_PROMPT} Based on the information provided, here's my prediction for the match:"
         print(prompt)
 
@@ -123,7 +104,7 @@ class SonnetAIBot:
                 owner_name=ai_user.username,
                 team1_score=prediction['home_score'],
                 team2_score=prediction['away_score'],
-                hidden=False
+                hidden=HIDDEN,
             )
             db.add(ai_bet)
             db.commit()

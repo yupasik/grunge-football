@@ -156,9 +156,9 @@ const Dashboard = () => {
                 <p>{formatDate(game.start_time)}</p>
               </div>
               <div className="game-teams">
-                <div className="team">{game.team1}</div>
+                <div className="team-admin">{game.team1}</div>
                 <div className="vs">vs</div>
-                <div className="team">{game.team2}</div>
+                <div className="team-admin">{game.team2}</div>
               </div>
               <div className="game-score">
                 <input
@@ -262,7 +262,7 @@ const Dashboard = () => {
                     className="tournament-logo"
                   />
                 </div>
-                <h3 className="tournament-name">{tournament.name}</h3>
+                <h3 className="tournament-name-admin">{tournament.name}</h3>
               </div>
               <div className="tournament-actions">
                 <button onClick={() => handleEditTournament(tournament)}>EDIT</button>

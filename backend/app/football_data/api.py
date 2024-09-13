@@ -1,57 +1,52 @@
 import os
+from typing import Dict, Any
 import httpx
 import json
-from typing import Dict, Any
-from httpx._exceptions import HTTPError
 import logging
 import time
 from ..config import load_config
-
 
 app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 config = load_config(config_file=os.path.join(app_path, "config.yaml"))
 
 API_KEY = config.data.token.get_secret_value()
 
-
 class FootballDataAPI:
     BASE_URL = "https://api.football-data.org/v4"
+    _instance = None
 
-    def __init__(self, api_key: str):
-        self.api_key = api_key
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(FootballDataAPI, cls).__new__(cls)
+            cls._instance.initialize()
+        return cls._instance
+
+    def initialize(self):
+        self.api_key = API_KEY
         self.headers = {"X-Auth-Token": self.api_key}
         self.cache: Dict[str, Dict[str, Any]] = {}
-        self.cache_ttl = 300
+        self.cache_ttl = 300  # 5 minutes
 
-    async def _get_cache(self, key: str) -> Dict[str, Any] | None:
+    def _get_cache(self, key: str) -> Dict[str, Any] | None:
         if key in self.cache:
             cached_data, timestamp = self.cache[key]
             if time.time() - timestamp < self.cache_ttl:
+                logging.info(f"Cache hit for key: {key}")
                 return cached_data
             else:
+                logging.info(f"Cache expired for key: {key}")
                 del self.cache[key]
         return None
 
     def _set_cache(self, key: str, value: Dict[str, Any]) -> None:
+        logging.info(f"Setting cache for key: {key}")
         self.cache[key] = (value, time.time())
-
-    async def _send_request(self, endpoint: str, params: dict = None):
-        url = f"{self.BASE_URL}/{endpoint}"
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(url, headers=self.headers, params=params)
-                response.raise_for_status()
-                return response.json()
-            except HTTPError as http_err:
-                logging.error(f"HTTP error occurred: {http_err}")
-            except Exception as err:
-                logging.error(f"An error occurred: {err}")
 
     async def _send_cached_request(self, endpoint: str, params: dict = None) -> Dict[str, Any] | None:
         url = f"{self.BASE_URL}/{endpoint}"
-        cache_key = f"{endpoint}:{str(params)}"
+        cache_key = f"{endpoint}:{json.dumps(params, sort_keys=True)}"
 
-        cached_data = await self._get_cache(cache_key)
+        cached_data = self._get_cache(cache_key)
         if cached_data:
             return cached_data
 
@@ -62,11 +57,22 @@ class FootballDataAPI:
                 data = response.json()
                 self._set_cache(cache_key, data)
                 return data
-            except HTTPError as http_err:
+            except httpx.HTTPError as http_err:
                 logging.error(f"HTTP error occurred: {http_err}")
             except Exception as err:
                 logging.error(f"An error occurred: {err}")
         return None
+
+    async def _send_request(self, endpoint: str, params: dict = None):
+        url = f"{self.BASE_URL}/{endpoint}"
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(url, headers=self.headers, params=params)
+                response.raise_for_status()
+                return response.json()
+            except Exception as err:
+                logging.error(f"An error occurred: {err}")
+
 
     async def get_competitions(self):
         """Retrieve a list of available competitions."""
@@ -109,6 +115,7 @@ class FootballDataAPI:
         return await self._send_request(f"matches/{match_id}")
 
 
+football_data_api = FootballDataAPI()
 
 async def get_football_data_api() -> FootballDataAPI:
-    return FootballDataAPI(api_key=API_KEY)
+    return football_data_api
