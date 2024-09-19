@@ -156,7 +156,7 @@ async def get_tournaments(
     for tournament in tournaments:
         tournament_data = TournamentRead.model_validate(tournament)
 
-        team_emblems = {team.data_id: team.emblem for team in tournament.teams}
+        team_emblems = {team.data_id: team.emblem for team in tournament.teams if team.data_id is not None}
 
         updated_games = []
         for game in tournament.games:

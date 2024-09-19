@@ -7,12 +7,11 @@ class Area(BaseModel):
     id: int
     name: str
     code: str
-    flag: HttpUrl
+    flag: Optional[str] = None
 
 
 
 class AreaRead(Area):
-
     class Config:
         from_attributes = True
 
@@ -30,7 +29,6 @@ class TeamCreate(TeamBase):
 
 class TeamUpdate(TeamCreate):
     id: int
-    pass
 
 
 class TeamReadSimple(TeamCreate):

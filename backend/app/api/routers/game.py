@@ -17,7 +17,7 @@ from app.notifications.send import send_notifications
 from app.api.crud.team import create_team
 from app.football_data.api import FootballDataAPI, get_football_data_api
 from app.ai_bots.sonnet.sonnet_ai_bot import SonnetAIBot
-from app.ai_bots.openai.chatgpt_bot import ChatGPTBot
+from app.utils.bet_utils import process_bets_for_finished_game
 
 router = APIRouter()
 
@@ -117,7 +117,7 @@ async def create_game(
     db.refresh(new_game)
 
     background_tasks.add_task(send_notifications, [(new_game, tournament.name)], [], db)
-
+    print("PREDICTION STARTED")
     # Generate AI prediction
     ai_bot = SonnetAIBot()
     ai_bot.make_prediction(db, new_game.id)
@@ -240,25 +240,7 @@ async def finish_game(
     if db_game.start_time - timedelta(hours=3) > datetime.utcnow():
         raise HTTPException(status_code=400, detail="Cannot finish not started game")
 
-    bets = db.query(Bet).filter(Bet.game_id == game_id).all()
-    for bet in bets:
-        if bet.team1_score == db_game.team1_score and bet.team2_score == db_game.team2_score:
-            bet.points = 5  # Exact score match
-        elif bet.team1_score - bet.team2_score == db_game.team1_score - db_game.team2_score:
-            bet.points = 3  # Correct goal difference but not exact score
-        elif (bet.team1_score > bet.team2_score and db_game.team1_score > db_game.team2_score) or (
-            bet.team1_score < bet.team2_score and db_game.team1_score < db_game.team2_score
-        ):
-            bet.points = 1  # Correct outcome (win/loss)
-        else:
-            bet.points = 0  # Incorrect prediction
-        bet.finished = True  # Mark bet as finished
-
-    db.commit()
-
-    # Batch update users' total points
-    for bet in bets:
-        db.query(User).filter(User.id == bet.owner_id).update({"total_points": User.total_points + bet.points})
+    process_bets_for_finished_game(db, db_game)
 
     db_game.finished = True
     db.commit()

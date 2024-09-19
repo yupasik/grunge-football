@@ -3,11 +3,11 @@ from telegram import Bot
 from ..config import load_config
 
 app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-config = load_config(config_file=os.path.join(app_path, "config.yaml"))
+config = load_config(config_file=os.path.join(app_path, "config.yaml")).telegram
 
-TG_TOKEN = config.telegram.token.get_secret_value()
-CHANEL_ID = config.telegram.channel_id
-NOTIFY = config.telegram.notify
+TG_TOKEN = config.token.get_secret_value()
+CHANEL_ID = config.channel_id
+NOTIFY = config.notify
 
 
 bot = Bot(token=TG_TOKEN)
