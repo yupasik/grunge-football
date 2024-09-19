@@ -25,7 +25,7 @@ class TournamentRead(TournamentBase):
 
     class Config:
         from_attributes = True
-        orm_mode = True
+        # orm_mode = True
 
 
 from .game import GameRead

@@ -15,17 +15,17 @@ class FootballDataAPI:
     BASE_URL = "https://api.football-data.org/v4"
     _instance = None
 
-    def __new__(cls):
+    def __new__(cls, token=None):
         if cls._instance is None:
             cls._instance = super(FootballDataAPI, cls).__new__(cls)
-            cls._instance.initialize()
+            cls._instance.initialize(token=token)
         return cls._instance
 
-    def initialize(self):
-        self.api_key = API_KEY
+    def initialize(self, token=None):
+        self.api_key = token or API_KEY
         self.headers = {"X-Auth-Token": self.api_key}
         self.cache: Dict[str, Dict[str, Any]] = {}
-        self.cache_ttl = 300  # 5 minutes
+        self.cache_ttl = 600  # 10 minutes
 
     def _get_cache(self, key: str) -> Dict[str, Any] | None:
         if key in self.cache:
@@ -53,6 +53,7 @@ class FootballDataAPI:
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(url, headers=self.headers, params=params)
+                print(response)
                 response.raise_for_status()
                 data = response.json()
                 self._set_cache(cache_key, data)
@@ -67,6 +68,7 @@ class FootballDataAPI:
         url = f"{self.BASE_URL}/{endpoint}"
         async with httpx.AsyncClient() as client:
             try:
+                print(self.headers)
                 response = await client.get(url, headers=self.headers, params=params)
                 response.raise_for_status()
                 return response.json()
